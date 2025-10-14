@@ -1,7 +1,6 @@
 media/
 __pycache__/** 
 */__pycache__/
-.env
 .idea/
 .sqlite.db
 .pyc
@@ -207,7 +206,7 @@ celerybeat-schedule
 *.sage.py
 
 # dotenv
-.env
+
 
 # virtualenv
 .venv
