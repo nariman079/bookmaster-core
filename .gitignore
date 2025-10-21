@@ -11,6 +11,7 @@ static/
 *.log
 **/logs/** */
 .ruff_cache/
+.env
 *.log.*
 # Created by https://www.gitignore.io/api/macos,linux,django,python,pycharm
 .mypy_cache/
