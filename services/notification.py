@@ -1,5 +1,6 @@
 import os
 import asyncio
+import json
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -17,13 +18,23 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class Notify:
+class Order:
     """Датакласс для уведомления."""
-    user_id: str
-    message: str
-    notification_type: str  
-    recipient: str  
+    order_id: int
+    master_id: str
+    customer_phone: str
+    begin_date: str
+    begin_time: str
+    request_id: str
 
+@dataclass
+class Notify:
+    event: str
+    obj: dict
+    _from: str
+    metadata: dict
+    notification_type: str
+    
 
 class NotificationHandler(ABC):
     """Абстрактный базовый класс для обработчиков уведомлений."""
@@ -86,7 +97,7 @@ class NotificationConsumer:
         self.consumer = AIOKafkaConsumer(
             self.topic,
             bootstrap_servers=self.bootstrap_servers,
-            value_deserializer=lambda m: m.decode('utf-8'),  
+            value_deserializer=lambda m: json.loads(v.decode('utf-8')),  
             security_protocol="SASL_PLAINTEXT",
             sasl_mechanism="PLAIN",
             sasl_plain_username=KAFKA_USERNAME,
@@ -108,23 +119,25 @@ class NotificationConsumer:
         """Основной цикл обработки сообщений из Kafka."""
         async for msg in self.consumer:
             try:
-                # и создать объект Notify. Пока просто строка.
-                raw_message = msg.value
-                logger.info(f"Received message: {raw_message}")
-                print(msg.value)
-                # Примерный парсинг (в реальности используйте json.loads и валидацию)
-                # Для примера создадим фиктивный объект Notify
-                # Предположим, сообщение имеет вид "type|user_id|recipient|message"
-                parts = raw_message.split('|', 3)
-                if len(parts) < 4:
-                    logger.error(f"Invalid message format: {raw_message}")
-                    continue
-
-                notify_type, user_id, recipient, message = parts
-                notify_obj = Notify(user_id=user_id, message=message, notification_type=notify_type, recipient=recipient)
-
-                extra_data = {"kafka_offset": msg.offset, "partition": msg.partition}
-
+                message_data = msg.value
+                logger.info(f"Processing event '{event}' from {_from}")                
+                event = message_data.get('event')
+                metadata = message_data.get('metadata')
+                object_data = message_data.get('data')
+                _from = message_data.get('_from')
+                notification_type = message_data.get('notification_type')
+                notify_obj = Notify(
+                    obj=object_data,
+                    event=event,
+                    _from=_from,
+                    metadata=metadata,
+                    notification_type=notification_type
+                )
+                extra_data = {
+                    "kafka_offset": msg.offset, 
+                    "partition": msg.partition,
+                    **metadata
+                }
                 await self._handle_notification_async(notify_obj, extra_data)
 
             except Exception as e:

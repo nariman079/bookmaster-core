@@ -165,6 +165,7 @@ services:
       - .env
     depends_on:
       - kafka
+      - grafana
     restart: on-failure
     networks:
       - net

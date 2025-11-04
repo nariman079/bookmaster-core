@@ -15,6 +15,8 @@ LOGGING_DIR = os.path.join(BASE_DIR, "logs")
 if not os.path.exists(LOGGING_DIR):
     os.makedirs(LOGGING_DIR)
 
+
+
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 DEBUG = True

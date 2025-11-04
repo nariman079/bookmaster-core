@@ -1,4 +1,5 @@
 import json
+import os
 import logging
 from typing import Any, Dict
 from aiokafka import AIOKafkaProducer
@@ -32,7 +33,7 @@ class DjangoKafkaProducer:
                 bootstrap_servers=self.bootstrap_servers,
                 value_serializer=lambda v: json.dumps(v).encode('utf-8'),
                 security_protocol="SASL_PLAINTEXT",
-                sasl_mechanism="SCRAM-SHA-512",
+                sasl_mechanism="PLAIN",
                 sasl_plain_username=KAFKA_USERNAME,
                 sasl_plain_password=KAFKA_PASSWORD,
             )

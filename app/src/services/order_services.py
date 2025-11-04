@@ -7,10 +7,12 @@
 from datetime import time
 from datetime import datetime, timedelta
 from typing import Any, OrderedDict
+import socket
 
 from django.db import transaction
 from django.db.models.query import QuerySet
 from django.db.models import Sum
+from django.utils import timezone
 
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -197,20 +199,31 @@ class OrderCreateSrv:
 
     def _send_notification_on_master(self):
         """Отправка сообщания мастеру о брони"""
-        send_message_telegram_on_master.delay(
-            self.master_id,
-            self.customer_phone,
-            self.begin_date,
-            self.begin_time,
-            self.logger.request_id,
-        )
+        # send_message_telegram_on_master.delay(
+        #     self.master_id,
+        #     self.customer_phone,
+        #     self.begin_date,
+        #     self.begin_time,
+        #     self.logger.request_id,
+        # )
         
         message_data = {
-            "master_id": self.master_id,
-            "customer_phone": self.customer_phone,
-            "begin_date": self.begin_date,
-            "begin_time": self.begin_time,
-            "request_id": self.logger.request_id,
+            "event": "order.create",
+            "notification_type": 'telegram',
+            "data": {
+                "order_id": self.order.pk,
+                "master_id": self.master_id,
+                "customer_phone": self.customer_phone,
+                "begin_date": self.begin_date.isoformat(),
+                "begin_time": self.begin_time.isoformat(),
+            },
+            "metadata": {
+                "request_id": self.logger.request_id,
+                "timestamp": timezone.now().isoformat(),
+                "source": "bookingmaster-api",
+                "instance_id": socket.gethostname()
+            },
+            "_from": "order"
         }
         send_message_in_broker.delay(
             message_data
