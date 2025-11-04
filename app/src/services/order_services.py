@@ -17,7 +17,7 @@ from rest_framework.response import Response
 
 from config import csm_metrics
 
-from src.tasks import send_message_telegram_on_master, change_status_order
+from src.tasks import send_message_telegram_on_master, change_status_order, send_message_in_broker
 from src.models import Order, Booking, Service, Customer, Organization
 from src.utils.logger import RequestLogger
 
@@ -204,7 +204,18 @@ class OrderCreateSrv:
             self.begin_time,
             self.logger.request_id,
         )
-
+        
+        message_data = {
+            "master_id": self.master_id,
+            "customer_phone": self.customer_phone,
+            "begin_date": self.begin_date,
+            "begin_time": self.begin_time,
+            "request_id": self.logger.request_id,
+        }
+        send_message_in_broker.delay(
+            message_data
+        )
+    
     def _send_order_status_check(self):
         """Смена статуса брони или заказа"""
         change_in_progress_time = (
@@ -257,6 +268,8 @@ class OrderCreateSrv:
                 "event": "order.create",
             },
         )
+
+
         return Response(
             {
                 "message": "Заказ успешно создан",

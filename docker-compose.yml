@@ -21,6 +21,48 @@ services:
     networks:
       - net
 
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    ports:
+      - "9092:9092"
+    networks:
+      - net
+    environment:
+      # KRaft mode — NO ZOOKEEPER
+      CLUSTER_ID: "nlt5fjLLRLSaO1Hm7Gpc5A"  
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:29093"
+      KAFKA_LISTENERS: "SASL_PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:29093"
+      KAFKA_ADVERTISED_LISTENERS: "SASL_PLAINTEXT://kafka:9092"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "SASL_PLAINTEXT:SASL_PLAINTEXT,CONTROLLER:PLAINTEXT"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "SASL_PLAINTEXT"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_SASL_ENABLED_MECHANISMS: "PLAIN"
+      KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: "PLAIN"
+      KAFKA_SASL_JAAS_CONFIG: |
+        org.apache.kafka.common.security.plain.PlainLoginModule required
+        username="admin"
+        password="admin-secret"
+        user_admin="admin-secret"
+        user_client="client-secret";
+
+      KAFKA_OPTS: "-Djava.security.auth.login.config=/tmp/kafka_server_jaas.conf"      
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+
+    command: |
+      bash -c "
+        echo 'KafkaServer {
+          org.apache.kafka.common.security.plain.PlainLoginModule required
+          username=\"admin\"
+          password=\"admin-secret\"
+          user_admin=\"admin-secret\"
+          user_client=\"client-secret\";
+        };' > /tmp/kafka_server_jaas.conf &&
+        /etc/confluent/docker/run
+      "
 
   redis:
     image: 'redis:alpine'
@@ -56,7 +98,6 @@ services:
 
   app:
     build: .
-    image: nariman079i/fixmaster:latest
     restart: always
     command: poetry run uvicorn config.asgi:application --host 0.0.0.0 --port 8000 --workers 4
     volumes:
@@ -114,6 +155,19 @@ services:
       - net
     env_file:
       - .env
+
+  notify_service:
+    build: .
+    volumes: 
+      - ./services:/services
+    command: sh -c "python /services/notification.py"
+    env_file:
+      - .env
+    depends_on:
+      - kafka
+    restart: on-failure
+    networks:
+      - net
 
   alertmanager:
     image: prom/alertmanager:latest

@@ -23,6 +23,7 @@ drf-spectacular-sidecar = "^2024.5.1"
 ruff = "^0.12.1"
 django-prometheus = "^2.4.1"
 python-json-logger = "^3.3.0"
+aiokafka = "^0.12.0"
 
 
 [build-system]
