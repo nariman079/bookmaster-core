@@ -5,7 +5,7 @@ from datetime import date, timedelta
 import string
 
 # Настройки
-ORDER_URL = "http://localhost/api/order/create/"  # Замените на ваш URL
+ORDER_URL = "http://localhost:8000/api/order/create/"  # Замените на ваш URL
 
 # Вспомогательные функции для генерации данных
 def random_date():

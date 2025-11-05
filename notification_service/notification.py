@@ -11,6 +11,8 @@ from dotenv import load_dotenv
 import aiokafka
 from aiokafka import AIOKafkaConsumer
 
+from services.notification_handlers import Notify
+import services 
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -27,13 +29,7 @@ class Order:
     begin_time: str
     request_id: str
 
-@dataclass
-class Notify:
-    event: str
-    obj: dict
-    _from: str
-    metadata: dict
-    notification_type: str
+
     
 
 class NotificationHandler(ABC):
@@ -49,9 +45,6 @@ class TelegramNotificationHandler(NotificationHandler):
     """Обработчик для отправки уведомлений в Telegram."""
 
     async def send(self, notify: Notify, extra: dict):
-        # Заглушка для отправки в Telegram
-        logger.info(f"Sending Telegram notification to {notify.recipient}: {notify.message}")
-        # await some_async_telegram_library.send_message(...)
         await asyncio.sleep(0.1)  # Имитация асинхронной операции
 
 
@@ -97,7 +90,7 @@ class NotificationConsumer:
         self.consumer = AIOKafkaConsumer(
             self.topic,
             bootstrap_servers=self.bootstrap_servers,
-            value_deserializer=lambda m: json.loads(v.decode('utf-8')),  
+            value_deserializer=lambda m: json.loads(m.decode('utf-8')),  
             security_protocol="SASL_PLAINTEXT",
             sasl_mechanism="PLAIN",
             sasl_plain_username=KAFKA_USERNAME,
@@ -120,7 +113,6 @@ class NotificationConsumer:
         async for msg in self.consumer:
             try:
                 message_data = msg.value
-                logger.info(f"Processing event '{event}' from {_from}")                
                 event = message_data.get('event')
                 metadata = message_data.get('metadata')
                 object_data = message_data.get('data')
@@ -138,6 +130,8 @@ class NotificationConsumer:
                     "partition": msg.partition,
                     **metadata
                 }
+                logger.info(f"Processing event '{event}' from {_from}")                
+
                 await self._handle_notification_async(notify_obj, extra_data)
 
             except Exception as e:
@@ -145,12 +139,13 @@ class NotificationConsumer:
 
     async def _handle_notification_async(self, notify: Notify, extra: dict):
         """Асинхронная функция обработчика уведомления с логированием."""
-        logger.info(f"Handling notification for user {notify.user_id}, type: {notify.notification_type}, recipient: {notify.recipient}")
+        logger.info(f"Handling notification for user {notify.event}, type: {notify.notification_type}")
         try:
-            handler = self.handlers.get(notify.notification_type)
+            handlers = services.notification_handlers.get_event_handlers()
+            handler = handlers.get(notify.event)
             if handler:
-                await handler.send(notify, extra)
-                logger.info(f"Notification of type {notify.notification_type} processed successfully for user {notify.user_id}.")
+                await handler(notify, extra)
+                logger.info(f"Notification of type {notify.notification_type} processed successfully for user ")
             else:
                 logger.warning(f"No handler found for notification type: {notify.notification_type}")
         except Exception as e:

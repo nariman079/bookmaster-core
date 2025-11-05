@@ -13,7 +13,7 @@ class RequestLogger:
     генерирует request_id
     """
 
-    def __init__(self, request_id: str) -> None:
+    def __init__(self, request_id: str = 'none') -> None:
         self.request_id = request_id
         self.logger = logging.getLogger("src")
 
@@ -35,3 +35,4 @@ class RequestLogger:
 
     def critical(self, msg, **kwargs):
         self._log("critical", msg, **kwargs)
+

@@ -4,6 +4,7 @@ Django settings
 
 import os
 from pathlib import Path
+import logging
 
 import json
 import redis
@@ -140,10 +141,22 @@ SPECTACULAR_SETTINGS = {
     "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
     "REDOC_DIST": "SIDECAR",
 }
+class SafeRequestIDFormatter(logging.Formatter):
+    def format(self, record):
+        # Добавляем request_id, если его нет
+        if not hasattr(record, 'request_id'):
+            record.request_id = 'none'
+        return super().format(record)
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
+        'verbose': {
+            '()': SafeRequestIDFormatter,  
+            'format': '[{asctime}] {request_id} {levelname} {name} {message}',
+            'style': '{',
+        },
         "main": {
             "format": "[%(asctime)s] %(levelname)s %(request_id)s %(message)s",
             "datefmt": "%Y-%m-%d %H:%M:%S",
@@ -187,7 +200,7 @@ LOGGING = {
         "console": {
             "level": "DEBUG",
             "class": "logging.StreamHandler",
-            "formatter": "main",
+            "formatter": "verbose",
         },
         "file": {
             "level": "DEBUG",

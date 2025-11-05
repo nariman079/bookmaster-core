@@ -1,0 +1,57 @@
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import Dict, Any
+import asyncio
+
+@dataclass
+class Event:
+    evet_type: str
+    data: dict[str, any]
+    timestamp: 
+
+@dataclass
+class Notify:
+    event: str
+    obj: dict
+    _from: str
+    metadata: dict
+    notification_type: str
+
+# handlers.py
+from typing import Dict, Callable, Any
+import logging
+
+logger = logging.getLogger(__name__)
+
+# Глобальный реестр: event_name → async функция
+_EVENT_HANDLERS: Dict[str, Callable] = {}
+
+def get_event_handlers() -> dict[str, callable]:
+    """Возвращает копию реестра обработчиков."""
+    return _EVENT_HANDLERS.copy()
+
+def event_handler(event_name: str):
+    """
+    Декоратор для регистрации асинхронного обработчика события.
+    
+    Использование:
+        @event_handler('order.created')
+        async def handle_order_created(event_data: dict, metadata: dict):
+            ...
+    """
+    def decorator(func: Callable) -> Callable:
+        if not asyncio.iscoroutinefunction(func):
+            raise ValueError(f"Handler {func.__name__} must be async")
+        
+        if event_name in _EVENT_HANDLERS:
+            logger.warning(f"Handler for event '{event_name}' is already registered. Overriding.")
+        
+        _EVENT_HANDLERS[event_name] = func
+        logger.info(f"Registered event handler '{func.__name__}' for event '{event_name}'")
+        return func
+    return decorator
+
+
+@event_handler("order.create")
+async def create_order_handler(notify: Notify, extra: dict):
+    logger.info(f"Create order, {extra}")
