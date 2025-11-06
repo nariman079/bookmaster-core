@@ -7,7 +7,7 @@ from src.utils.kafka import DjangoKafkaProducer
 kafka_host = os.getenv('KAFKA_HOST')
 
 @shared_task
-def send_message_in_broker(message_data: dict):
+def send_message_in_broker(message_data: dict, topic: str = 'default_topic'):
     """Отправка сообщения в Kafka из Celery (синхронный таск с асинхронной логикой)"""
     async def _send():
         producer = DjangoKafkaProducer(bootstrap_servers=kafka_host)
@@ -15,7 +15,7 @@ def send_message_in_broker(message_data: dict):
             await producer.start()
             print(message_data)
             await producer.send_message(
-                topic='default_topic',
+                topic=topic,
                 message_data=message_data,
                 key=message_data.get('order_id')
             )

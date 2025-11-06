@@ -20,7 +20,7 @@ from rest_framework.response import Response
 from config import csm_metrics
 
 from src.tasks import send_message_telegram_on_master, change_status_order, send_message_in_broker
-from src.models import Order, Booking, Service, Customer, Organization
+from src.models import Order, Booking, Service, Customer, Organization, Master
 from src.utils.logger import RequestLogger
 
 
@@ -199,23 +199,17 @@ class OrderCreateSrv:
 
     def _send_notification_on_master(self):
         """Отправка сообщания мастеру о брони"""
-        # send_message_telegram_on_master.delay(
-        #     self.master_id,
-        #     self.customer_phone,
-        #     self.begin_date,
-        #     self.begin_time,
-        #     self.logger.request_id,
-        # )
-        
+        master_telegram_id = Master.objects.get(pk=self.master_id).telegram_id
         message_data = {
             "event": "order.create",
             "notification_type": 'telegram',
             "data": {
                 "order_id": self.order.pk,
                 "master_id": self.master_id,
+                "master_telegram_id": master_telegram_id,
                 "customer_phone": self.customer_phone,
-                "begin_date": self.begin_date.isoformat(),
-                "begin_time": self.begin_time.isoformat(),
+                "booking_date": self.begin_date.isoformat(),
+                "booking_time": self.begin_time.isoformat(),
             },
             "metadata": {
                 "request_id": self.logger.request_id,

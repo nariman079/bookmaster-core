@@ -63,7 +63,10 @@ class BotMyProfileView(APIView):
         if api_key_permission(request=self.request):
             user_params = self.request.query_params
 
-            get_profile = GetProfile(data=user_params)
+            get_profile = GetProfile(
+                data=user_params,
+                logger=self.request.logger    
+            )
             return get_profile.execute()
 
         return Response(
@@ -109,7 +112,8 @@ class BotOrganizationCreateView(APIView):
             organization_data = BotOrganizationCreateSerializer(data=self.request.data)
             organization_data.is_valid(raise_exception=True)
             create_organization = BotOrganizationCreate(
-                organization_data=organization_data.validated_data
+                organization_data=organization_data.validated_data,
+                logger=request.logger
             )
             return create_organization.execute()
 
@@ -130,7 +134,8 @@ class BotModeratorGetProfileView(APIView):
             moderator_data = BotModeratorGetProfileSerializer(data=self.request.data)
             moderator_data.is_valid(raise_exception=True)
             moderator_get_profile = BotModeratorGetProfile(
-                moderator_data=moderator_data.validated_data
+                moderator_data=moderator_data.validated_data,
+                logger=request.logger
             )
             return moderator_get_profile.execute()
 

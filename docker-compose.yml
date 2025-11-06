@@ -159,8 +159,8 @@ services:
   notify_service:
     build: .
     volumes: 
-      - ./services:/app/services
-    command: sh -c "python -m services.notification"
+      - ./notification_service:/app/notification_service
+    command: sh -c "python -m notification_service.notification"
     env_file:
       - .env
     depends_on:

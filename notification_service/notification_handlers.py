@@ -2,24 +2,12 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Dict, Any
 import asyncio
-
-@dataclass
-class Event:
-    evet_type: str
-    data: dict[str, any]
-    timestamp: 
-
-@dataclass
-class Notify:
-    event: str
-    obj: dict
-    _from: str
-    metadata: dict
-    notification_type: str
-
-# handlers.py
+import datetime
 from typing import Dict, Callable, Any
 import logging
+
+from notification_service.events.order_events import Event
+from notification_service.services import CreateOrderNotificationService, VerifyMasterNotificationService
 
 logger = logging.getLogger(__name__)
 
@@ -53,5 +41,14 @@ def event_handler(event_name: str):
 
 
 @event_handler("order.create")
-async def create_order_handler(notify: Notify, extra: dict):
-    logger.info(f"Create order, {extra}")
+async def create_order_handler(event: Event, extra: dict):
+    event.data['request_id'] = extra.get('request_id')
+    create_order_srv = CreateOrderNotificationService(event.data)
+    await create_order_srv.execute()
+
+
+@event_handler('master.verify')
+async def verify_master(event: Event, extra: dict):
+    event.data['request_id'] = extra.get('request_id')
+    verify_master_srv = VerifyMasterNotificationService(event.data)
+    await verify_master_srv.execute()

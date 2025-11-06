@@ -44,7 +44,7 @@ def random_comment():
 # Основная функция
 async def create_random_order():
     payload = {
-        "master_id": random.randint(1, 5),          # Предполагаем, что мастера с ID 1–5 существуют
+        "master_id": 1,          # Предполагаем, что мастера с ID 1–5 существуют
         "service_ids": random.sample(range(1, 21), k=random.randint(1, 3)),  # Услуги с ID 1–20
         "begin_date": random_date().isoformat(),
         "begin_time": random_time(),

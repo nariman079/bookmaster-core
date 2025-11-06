@@ -7,4 +7,3 @@ RUN poetry config virtualenvs.create false && poetry install --no-root
 
 
 COPY app/ /app/
-COPY services/ /services/
