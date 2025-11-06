@@ -17,7 +17,6 @@ if not os.path.exists(LOGGING_DIR):
     os.makedirs(LOGGING_DIR)
 
 
-
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 DEBUG = True
@@ -141,21 +140,24 @@ SPECTACULAR_SETTINGS = {
     "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
     "REDOC_DIST": "SIDECAR",
 }
+
+
 class SafeRequestIDFormatter(logging.Formatter):
     def format(self, record):
         # Добавляем request_id, если его нет
-        if not hasattr(record, 'request_id'):
-            record.request_id = 'none'
+        if not hasattr(record, "request_id"):
+            record.request_id = "none"
         return super().format(record)
+
 
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        'verbose': {
-            '()': SafeRequestIDFormatter,  
-            'format': '[{asctime}] {request_id} {levelname} {name} {message}',
-            'style': '{',
+        "verbose": {
+            "()": SafeRequestIDFormatter,
+            "format": "[{asctime}] {request_id} {levelname} {name} {message}",
+            "style": "{",
         },
         "main": {
             "format": "[%(asctime)s] %(levelname)s %(request_id)s %(message)s",

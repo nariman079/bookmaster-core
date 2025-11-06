@@ -2,6 +2,7 @@
 """
 Models for app Organizations
 """
+
 import secrets
 import uuid
 

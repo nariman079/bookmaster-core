@@ -1,8 +1,9 @@
 from aiogram import Bot
-from notification_service.utils import RequestLogger  
+from notification_service.utils import RequestLogger
 
 master_bot = Bot(token="8502011901:AAEKrM1xQ2TRW-k1nuTOpEdczw4QPwN-tPk")
 organization_bot = Bot(token="8502011901:AAEKrM1xQ2TRW-k1nuTOpEdczw4QPwN-tPk")
+
 
 class CreateOrderNotificationService:
     def __init__(self, data: dict[str, any]):
@@ -19,10 +20,10 @@ class CreateOrderNotificationService:
         booking_time = self.data["booking_time"]
 
         logger.info(
-          "Началась отправка телеграм сообщения",
+            "Началась отправка телеграм сообщения",
             extra={
                 "master_telegram_id": master_telegram_id,
-               "event": "notify.send.telegram",
+                "event": "notify.send.telegram",
             },
         )
 
@@ -53,28 +54,27 @@ class CreateOrderNotificationService:
                     "event": "notify.send.telegram",
                 },
             )
-            raise  
+            raise
 
     async def execute(self):
         await self._send_notification_on_master()
 
 
 class VerifyMasterNotificationService:
-    def __init__(self, data: dict[str, any]): 
+    def __init__(self, data: dict[str, any]):
         self.data = data
-    
+
     async def _send_message_about_verified_master(self):
         """Отправка сообщения об успешной верификации мастера"""
-        self.master_name = self.data['master_name']
-        self.master_surname = self.data['master_surname']
-        self.organization_telegram_id = self.data['organization_telegram_id']
+        self.master_name = self.data["master_name"]
+        self.master_surname = self.data["master_surname"]
+        self.organization_telegram_id = self.data["organization_telegram_id"]
 
         text = f"✅ Мастер {self.master_name} {self.master_surname} зарегистрировался в системе \n"
-    
+
         await organization_bot.send_message(
-            chat_id=self.organization_telegram_id,
-            text=text
+            chat_id=self.organization_telegram_id, text=text
         )
-        
+
     async def execute(self):
         await self._send_message_about_verified_master()

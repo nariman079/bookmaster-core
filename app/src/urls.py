@@ -16,7 +16,6 @@ from src.views.organization_views import (
 )
 
 
-
 urlpatterns = [
     path("order/create/", OrderCreateView.as_view()),
     path("booking/get-free-times/", FreeBookingView.as_view()),

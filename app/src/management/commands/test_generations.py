@@ -2,8 +2,15 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from src.models import (
-    OrganizationType, Organization, Master, Service,
-    Customer, Order, Booking, Image, Moderator
+    OrganizationType,
+    Organization,
+    Master,
+    Service,
+    Customer,
+    Order,
+    Booking,
+    Image,
+    Moderator,
 )
 from src.enums import statuses
 import random
@@ -12,7 +19,7 @@ from datetime import date, time, timedelta
 
 
 def random_string(length=8):
-    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+    return "".join(random.choices(string.ascii_letters + string.digits, k=length))
 
 
 class Command(BaseCommand):
@@ -24,9 +31,7 @@ class Command(BaseCommand):
         # 1. OrganizationType
         org_types = []
         for i in range(3):
-            ot, _ = OrganizationType.objects.get_or_create(
-                title=f"Тип {i+1}"
-            )
+            ot, _ = OrganizationType.objects.get_or_create(title=f"Тип {i + 1}")
             org_types.append(ot)
 
         # 2. Organization
@@ -34,14 +39,14 @@ class Command(BaseCommand):
         for i in range(5):
             org = Organization.objects.create(
                 telegram_id=str(100000 + i),
-                title=f"Салон {i+1}",
-                address=f"Адрес {i+1}",
+                title=f"Салон {i + 1}",
+                address=f"Адрес {i + 1}",
                 contact_phone=f"+791234567{i}0",
                 time_begin=time(9, 0),
                 time_end=time(20, 0),
                 work_schedule="Пн-Вс 9:00-20:00",
                 organization_type=random.choice(org_types),
-                is_verified=random.choice([True, False])
+                is_verified=random.choice([True, False]),
             )
             orgs.append(org)
 
@@ -51,11 +56,13 @@ class Command(BaseCommand):
             org = random.choice(orgs)
             master = Master.objects.create(
                 telegram_id=str(200000 + i),
-                name=f"Имя{i+1}",
-                surname=f"Фамилия{i+1}",
-                gender=random.choice([statuses.CHOICES_GENDER[0][0], statuses.CHOICES_GENDER[1][0]]),
+                name=f"Имя{i + 1}",
+                surname=f"Фамилия{i + 1}",
+                gender=random.choice(
+                    [statuses.CHOICES_GENDER[0][0], statuses.CHOICES_GENDER[1][0]]
+                ),
                 organization=org,
-                is_verified=random.choice([True, False])
+                is_verified=random.choice([True, False]),
             )
             masters.append(master)
 
@@ -65,10 +72,10 @@ class Command(BaseCommand):
             for j in range(random.randint(1, 4)):
                 service = Service.objects.create(
                     master=master,
-                    title=f"Услуга {j+1} от {master.name}",
-                    short_description=f"Описание услуги {j+1}",
+                    title=f"Услуга {j + 1} от {master.name}",
+                    short_description=f"Описание услуги {j + 1}",
                     price=random.randint(500, 5000),
-                    min_time=random.randint(30, 120)
+                    min_time=random.randint(30, 120),
                 )
                 services.append(service)
 
@@ -80,7 +87,7 @@ class Command(BaseCommand):
                 phone=f"+79000000{i:03d}",
                 username=f"user_{i}",
                 name=f"Клиент {i}",
-                is_verified=random.choice([True, False])
+                is_verified=random.choice([True, False]),
             )
             customers.append(customer)
 
@@ -93,7 +100,9 @@ class Command(BaseCommand):
                 customer=customer if random.random() > 0.2 else None,
                 customer_phone=customer.phone if customer else f"+790011122{i:02d}",
                 customer_name=customer.name if customer else f"Имя {i}",
-                customer_notice="Тестовый комментарий" if random.random() > 0.5 else None,
+                customer_notice="Тестовый комментарий"
+                if random.random() > 0.5
+                else None,
                 status=random.choice([choice[0] for choice in statuses.CHOICES_STATUS]),
             )
             # Связываем случайные услуги (от 1 до 3)
@@ -122,7 +131,7 @@ class Command(BaseCommand):
                 booking_time=start_time,
                 booking_end_time=end_time,
                 master=master,
-                customer=customer
+                customer=customer,
             )
 
         # 8. Image
@@ -130,14 +139,13 @@ class Command(BaseCommand):
             Image.objects.create(
                 organization=org,
                 image_url=f"https://example.com/images/{random_string()}.jpg",
-                priority=random.randint(1, 10)
+                priority=random.randint(1, 10),
             )
 
         # 9. Moderator
         for i in range(3):
             Moderator.objects.create(
-                telegram_id=str(400000 + i),
-                login=f"moderator_{i}"
+                telegram_id=str(400000 + i), login=f"moderator_{i}"
             )
 
         self.stdout.write(self.style.SUCCESS("Тестовые данные успешно созданы!"))

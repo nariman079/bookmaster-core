@@ -21,5 +21,5 @@ __all__ = (
     "send_message_about_verify_customer",
     "send_is_verified_organization",
     "update_metrics",
-    "send_message_in_broker"
+    "send_message_in_broker",
 )

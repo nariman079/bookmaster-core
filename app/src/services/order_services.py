@@ -19,7 +19,11 @@ from rest_framework.response import Response
 
 from config import csm_metrics
 
-from src.tasks import send_message_telegram_on_master, change_status_order, send_message_in_broker
+from src.tasks import (
+    send_message_telegram_on_master,
+    change_status_order,
+    send_message_in_broker,
+)
 from src.models import Order, Booking, Service, Customer, Organization, Master
 from src.utils.logger import RequestLogger
 
@@ -202,7 +206,7 @@ class OrderCreateSrv:
         master_telegram_id = Master.objects.get(pk=self.master_id).telegram_id
         message_data = {
             "event": "order.create",
-            "notification_type": 'telegram',
+            "notification_type": "telegram",
             "data": {
                 "order_id": self.order.pk,
                 "master_id": self.master_id,
@@ -215,14 +219,12 @@ class OrderCreateSrv:
                 "request_id": self.logger.request_id,
                 "timestamp": timezone.now().isoformat(),
                 "source": "bookingmaster-api",
-                "instance_id": socket.gethostname()
+                "instance_id": socket.gethostname(),
             },
-            "_from": "order"
+            "_from": "order",
         }
-        send_message_in_broker.delay(
-            message_data
-        )
-    
+        send_message_in_broker.delay(message_data)
+
     def _send_order_status_check(self):
         """Смена статуса брони или заказа"""
         change_in_progress_time = (
@@ -275,7 +277,6 @@ class OrderCreateSrv:
                 "event": "order.create",
             },
         )
-
 
         return Response(
             {

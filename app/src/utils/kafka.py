@@ -26,12 +26,12 @@ class DjangoKafkaProducer:
 
     async def start(self):
         """Запуск Kafka Producer."""
-        KAFKA_USERNAME = os.getenv('KAFKA_USERNAME')
-        KAFKA_PASSWORD = os.getenv('KAFKA_PASSWORD') 
+        KAFKA_USERNAME = os.getenv("KAFKA_USERNAME")
+        KAFKA_PASSWORD = os.getenv("KAFKA_PASSWORD")
         if not self._started:
             self.producer = AIOKafkaProducer(
                 bootstrap_servers=self.bootstrap_servers,
-                value_serializer=lambda v: json.dumps(v).encode('utf-8'),
+                value_serializer=lambda v: json.dumps(v).encode("utf-8"),
                 security_protocol="SASL_PLAINTEXT",
                 sasl_mechanism="PLAIN",
                 sasl_plain_username=KAFKA_USERNAME,
@@ -48,7 +48,9 @@ class DjangoKafkaProducer:
             self._started = False
             logger.info("Kafka producer stopped.")
 
-    async def send_message(self, topic: str, message_data: Dict[str, Any], key: str = None):
+    async def send_message(
+        self, topic: str, message_data: Dict[str, Any], key: str = None
+    ):
         """
         Отправка сообщения в указанный топик Kafka.
         :param topic: Название топика Kafka.
@@ -59,14 +61,20 @@ class DjangoKafkaProducer:
             raise RuntimeError("Producer is not started. Call start() first.")
 
         try:
-            future = await self.producer.send_and_wait(topic, value=message_data, key=key.encode('utf-8') if key else None)
-            logger.info(f"Message sent to topic {topic}, partition {future.partition}, offset {future.offset}")
+            future = await self.producer.send_and_wait(
+                topic, value=message_data, key=key.encode("utf-8") if key else None
+            )
+            logger.info(
+                f"Message sent to topic {topic}, partition {future.partition}, offset {future.offset}"
+            )
         except Exception as e:
             logger.error(f"Failed to send message to topic {topic}: {e}", exc_info=True)
-            raise # Пробрасываем ошибку, чтобы вызывающий код мог обработать её
+            raise  # Пробрасываем ошибку, чтобы вызывающий код мог обработать её
 
     # Опционально: метод для отправки сообщения без ожидания подтверждения
-    def send_message_no_wait(self, topic: str, message_data: Dict[str, Any], key: str = None):
+    def send_message_no_wait(
+        self, topic: str, message_data: Dict[str, Any], key: str = None
+    ):
         """
         Отправка сообщения в указанный топик Kafka без ожидания подтверждения.
         :param topic: Название топика Kafka.
@@ -78,17 +86,23 @@ class DjangoKafkaProducer:
 
         # Используем fire-and-forget подход
         # Подписываемся на результат внутри метода, логируем ошибки
-        task = asyncio.create_task(
-            self._send_and_log(topic, message_data, key)
-        )
+        task = asyncio.create_task(self._send_and_log(topic, message_data, key))
         # Не ждем завершения задачи, но можно сохранить для отслеживания
         # например, в self._pending_tasks для graceful shutdown
         return task
 
-    async def _send_and_log(self, topic: str, message_data: Dict[str, Any], key: str = None):
+    async def _send_and_log(
+        self, topic: str, message_data: Dict[str, Any], key: str = None
+    ):
         """Внутренний метод для отправки и логирования результата."""
         try:
-            future = await self.producer.send_and_wait(topic, value=message_data, key=key.encode('utf-8') if key else None)
-            logger.info(f"Message (no wait) sent to topic {topic}, partition {future.partition}, offset {future.offset}")
+            future = await self.producer.send_and_wait(
+                topic, value=message_data, key=key.encode("utf-8") if key else None
+            )
+            logger.info(
+                f"Message (no wait) sent to topic {topic}, partition {future.partition}, offset {future.offset}"
+            )
         except Exception as e:
-            logger.error(f"Failed to send message (no wait) to topic {topic}: {e}", exc_info=True)
+            logger.error(
+                f"Failed to send message (no wait) to topic {topic}: {e}", exc_info=True
+            )

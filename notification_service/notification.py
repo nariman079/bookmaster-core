@@ -11,12 +11,10 @@ import aiokafka
 from aiokafka import AIOKafkaConsumer
 
 from notification_service.events.order_events import Event
-from notification_service import notification_handlers as services 
+from notification_service import notification_handlers as services
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
 
 
 class NotificationConsumer:
@@ -30,12 +28,12 @@ class NotificationConsumer:
 
     async def start(self):
         """Запуск Kafka Consumer."""
-        KAFKA_USERNAME = os.getenv('KAFKA_USERNAME')
-        KAFKA_PASSWORD = os.getenv('KAFKA_PASSWORD') 
+        KAFKA_USERNAME = os.getenv("KAFKA_USERNAME")
+        KAFKA_PASSWORD = os.getenv("KAFKA_PASSWORD")
         self.consumer = AIOKafkaConsumer(
             self.topic,
             bootstrap_servers=self.bootstrap_servers,
-            value_deserializer=lambda m: json.loads(m.decode('utf-8')),  
+            value_deserializer=lambda m: json.loads(m.decode("utf-8")),
             security_protocol="SASL_PLAINTEXT",
             sasl_mechanism="PLAIN",
             sasl_plain_username=KAFKA_USERNAME,
@@ -58,21 +56,21 @@ class NotificationConsumer:
         async for msg in self.consumer:
             try:
                 message_data = msg.value
-                event_type = message_data.get('event')
-                metadata = message_data.get('metadata')
-                object_data = message_data.get('data')
-                notification_type = message_data.get('notification_type')
+                event_type = message_data.get("event")
+                metadata = message_data.get("metadata")
+                object_data = message_data.get("data")
+                notification_type = message_data.get("notification_type")
                 event = Event(
                     data=object_data,
                     event_type=event_type,
                     metadata=metadata,
                 )
                 extra_data = {
-                    "kafka_offset": msg.offset, 
+                    "kafka_offset": msg.offset,
                     "partition": msg.partition,
-                    **metadata
+                    **metadata,
                 }
-                # logger.info(f"Processing event '{event}' from {_from}")                
+                # logger.info(f"Processing event '{event}' from {_from}")
 
                 await self._handle_notification_async(event, extra_data)
 
@@ -88,7 +86,8 @@ class NotificationConsumer:
             if handler:
                 await handler(event, extra)
                 # logger.info(f"Notification of type {event.notification_type} processed successfully for user ")
-            else: pass
+            else:
+                pass
                 # logger.warning(f"No handler found for notification type: {event.notification_type}")
         except Exception as e:
             logger.error(f"Failed to process notification: {e}", exc_info=True)
@@ -97,8 +96,7 @@ class NotificationConsumer:
 async def main():
     """Точка входа для запуска консьюмера."""
     consumer = NotificationConsumer(
-        bootstrap_servers=os.getenv('KAFKA_HOST'),
-        topic='default_topic'
+        bootstrap_servers=os.getenv("KAFKA_HOST"), topic="default_topic"
     )
 
     try:

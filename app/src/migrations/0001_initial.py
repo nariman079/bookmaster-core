@@ -5,173 +5,494 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Master',
+            name="Master",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('telegram_id', models.CharField(default='web_user', max_length=30, verbose_name='ID Телеграм')),
-                ('code', models.CharField(blank=True, max_length=200, null=True, verbose_name='Код для регистрации')),
-                ('name', models.CharField(max_length=30, verbose_name='Имя')),
-                ('surname', models.CharField(max_length=30, verbose_name='Фамилия')),
-                ('image', models.ImageField(blank=True, null=True, upload_to='master', verbose_name='Изображние')),
-                ('image_url', models.CharField(blank=True, max_length=255, null=True, verbose_name='Ссылка на изображение')),
-                ('gender', models.CharField(blank=True, choices=[('MEN', 'Мужчина'), ('WOMEN', 'Женщина')], default='MEN', max_length=30, verbose_name='Пол')),
-                ('is_verified', models.BooleanField(default=False, verbose_name='Верифицирован')),
-                ('create_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "telegram_id",
+                    models.CharField(
+                        default="web_user", max_length=30, verbose_name="ID Телеграм"
+                    ),
+                ),
+                (
+                    "code",
+                    models.CharField(
+                        blank=True,
+                        max_length=200,
+                        null=True,
+                        verbose_name="Код для регистрации",
+                    ),
+                ),
+                ("name", models.CharField(max_length=30, verbose_name="Имя")),
+                ("surname", models.CharField(max_length=30, verbose_name="Фамилия")),
+                (
+                    "image",
+                    models.ImageField(
+                        blank=True,
+                        null=True,
+                        upload_to="master",
+                        verbose_name="Изображние",
+                    ),
+                ),
+                (
+                    "image_url",
+                    models.CharField(
+                        blank=True,
+                        max_length=255,
+                        null=True,
+                        verbose_name="Ссылка на изображение",
+                    ),
+                ),
+                (
+                    "gender",
+                    models.CharField(
+                        blank=True,
+                        choices=[("MEN", "Мужчина"), ("WOMEN", "Женщина")],
+                        default="MEN",
+                        max_length=30,
+                        verbose_name="Пол",
+                    ),
+                ),
+                (
+                    "is_verified",
+                    models.BooleanField(default=False, verbose_name="Верифицирован"),
+                ),
+                ("create_at", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'verbose_name': 'Мастер',
-                'verbose_name_plural': 'Мастера',
+                "verbose_name": "Мастер",
+                "verbose_name_plural": "Мастера",
             },
         ),
         migrations.CreateModel(
-            name='Moderator',
+            name="Moderator",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('telegram_id', models.CharField(default='default-user', max_length=30, verbose_name='ID Телеграм')),
-                ('login', models.CharField(max_length=30, unique=True, verbose_name='Логин')),
-                ('code', models.CharField(blank=True, max_length=30, null=True, verbose_name='Код')),
-                ('create_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "telegram_id",
+                    models.CharField(
+                        default="default-user",
+                        max_length=30,
+                        verbose_name="ID Телеграм",
+                    ),
+                ),
+                (
+                    "login",
+                    models.CharField(max_length=30, unique=True, verbose_name="Логин"),
+                ),
+                (
+                    "code",
+                    models.CharField(
+                        blank=True, max_length=30, null=True, verbose_name="Код"
+                    ),
+                ),
+                ("create_at", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'verbose_name': 'Модераторы',
+                "verbose_name": "Модераторы",
             },
         ),
         migrations.CreateModel(
-            name='Organization',
+            name="Organization",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('telegram_id', models.CharField(editable=False, max_length=30, verbose_name='ID Телеграм')),
-                ('title', models.CharField(max_length=30, verbose_name='Название')),
-                ('main_image', models.ImageField(blank=True, null=True, upload_to='business', verbose_name='Заглавное изображение')),
-                ('main_image_url', models.CharField(blank=True, max_length=400, null=True)),
-                ('address', models.CharField(max_length=30, verbose_name='Адрес')),
-                ('contact_phone', models.CharField(max_length=30, verbose_name='Номер телефона')),
-                ('time_begin', models.TimeField(verbose_name='Начало рабочего дня')),
-                ('time_end', models.TimeField(verbose_name='Конец рабочего дня')),
-                ('work_schedule', models.CharField(max_length=30, verbose_name='График работы')),
-                ('is_verified', models.BooleanField(default=False, verbose_name='Верифицирован')),
-                ('create_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "telegram_id",
+                    models.CharField(
+                        editable=False, max_length=30, verbose_name="ID Телеграм"
+                    ),
+                ),
+                ("title", models.CharField(max_length=30, verbose_name="Название")),
+                (
+                    "main_image",
+                    models.ImageField(
+                        blank=True,
+                        null=True,
+                        upload_to="business",
+                        verbose_name="Заглавное изображение",
+                    ),
+                ),
+                (
+                    "main_image_url",
+                    models.CharField(blank=True, max_length=400, null=True),
+                ),
+                ("address", models.CharField(max_length=30, verbose_name="Адрес")),
+                (
+                    "contact_phone",
+                    models.CharField(max_length=30, verbose_name="Номер телефона"),
+                ),
+                ("time_begin", models.TimeField(verbose_name="Начало рабочего дня")),
+                ("time_end", models.TimeField(verbose_name="Конец рабочего дня")),
+                (
+                    "work_schedule",
+                    models.CharField(max_length=30, verbose_name="График работы"),
+                ),
+                (
+                    "is_verified",
+                    models.BooleanField(default=False, verbose_name="Верифицирован"),
+                ),
+                ("create_at", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'verbose_name': 'Салон',
-                'verbose_name_plural': 'Салоны',
+                "verbose_name": "Салон",
+                "verbose_name_plural": "Салоны",
             },
         ),
         migrations.CreateModel(
-            name='OrganizationType',
+            name="OrganizationType",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=255, verbose_name='Типы оргинизаций')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "title",
+                    models.CharField(max_length=255, verbose_name="Типы оргинизаций"),
+                ),
             ],
             options={
-                'verbose_name': 'Тип организации',
-                'verbose_name_plural': 'Типы организаций',
+                "verbose_name": "Тип организации",
+                "verbose_name_plural": "Типы организаций",
             },
         ),
         migrations.CreateModel(
-            name='Customer',
+            name="Customer",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('telegram_id', models.CharField(default='default-user', max_length=30, verbose_name='ID Телеграм')),
-                ('phone', models.CharField(blank=True, max_length=30, null=True, unique=True, verbose_name='Номер телефона')),
-                ('username', models.CharField(blank=True, max_length=30, null=True, verbose_name='Имя пользователя telegram')),
-                ('name', models.CharField(blank=True, max_length=250, null=True, verbose_name='Имя пользователя')),
-                ('additional_info', models.CharField(blank=True, max_length=255, null=True, verbose_name='Дополнительная информация')),
-                ('code', models.CharField(blank=True, max_length=255, null=True, verbose_name='Код для регистрации')),
-                ('is_verified', models.BooleanField(default=False, verbose_name='Верифицированный клиент')),
-                ('create_at', models.DateTimeField(auto_now=True)),
-                ('master', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='src.master')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "telegram_id",
+                    models.CharField(
+                        default="default-user",
+                        max_length=30,
+                        verbose_name="ID Телеграм",
+                    ),
+                ),
+                (
+                    "phone",
+                    models.CharField(
+                        blank=True,
+                        max_length=30,
+                        null=True,
+                        unique=True,
+                        verbose_name="Номер телефона",
+                    ),
+                ),
+                (
+                    "username",
+                    models.CharField(
+                        blank=True,
+                        max_length=30,
+                        null=True,
+                        verbose_name="Имя пользователя telegram",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(
+                        blank=True,
+                        max_length=250,
+                        null=True,
+                        verbose_name="Имя пользователя",
+                    ),
+                ),
+                (
+                    "additional_info",
+                    models.CharField(
+                        blank=True,
+                        max_length=255,
+                        null=True,
+                        verbose_name="Дополнительная информация",
+                    ),
+                ),
+                (
+                    "code",
+                    models.CharField(
+                        blank=True,
+                        max_length=255,
+                        null=True,
+                        verbose_name="Код для регистрации",
+                    ),
+                ),
+                (
+                    "is_verified",
+                    models.BooleanField(
+                        default=False, verbose_name="Верифицированный клиент"
+                    ),
+                ),
+                ("create_at", models.DateTimeField(auto_now=True)),
+                (
+                    "master",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="src.master",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Клиент',
-                'verbose_name_plural': 'Клиенты',
+                "verbose_name": "Клиент",
+                "verbose_name_plural": "Клиенты",
             },
         ),
         migrations.CreateModel(
-            name='Booking',
+            name="Booking",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('booking_date', models.DateField(verbose_name='Дата бронирования')),
-                ('booking_time', models.TimeField(verbose_name='Время бронирования')),
-                ('booking_end_time', models.TimeField(verbose_name='Длительность процедуры')),
-                ('create_at', models.DateTimeField(auto_now=True)),
-                ('customer', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='src.customer')),
-                ('master', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='src.master')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("booking_date", models.DateField(verbose_name="Дата бронирования")),
+                ("booking_time", models.TimeField(verbose_name="Время бронирования")),
+                (
+                    "booking_end_time",
+                    models.TimeField(verbose_name="Длительность процедуры"),
+                ),
+                ("create_at", models.DateTimeField(auto_now=True)),
+                (
+                    "customer",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="src.customer",
+                    ),
+                ),
+                (
+                    "master",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="src.master"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Бронирование',
-                'verbose_name_plural': 'Бронирование',
+                "verbose_name": "Бронирование",
+                "verbose_name_plural": "Бронирование",
             },
         ),
         migrations.AddField(
-            model_name='master',
-            name='organization',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='src.organization', verbose_name='Организация'),
+            model_name="master",
+            name="organization",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                to="src.organization",
+                verbose_name="Организация",
+            ),
         ),
         migrations.CreateModel(
-            name='Image',
+            name="Image",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('image', models.ImageField(blank=True, null=True, upload_to='images/', verbose_name='Изображение')),
-                ('image_url', models.CharField(blank=True, max_length=700, null=True)),
-                ('priority', models.IntegerField(default=0, verbose_name='Приоритет')),
-                ('create_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='src.organization')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "image",
+                    models.ImageField(
+                        blank=True,
+                        null=True,
+                        upload_to="images/",
+                        verbose_name="Изображение",
+                    ),
+                ),
+                ("image_url", models.CharField(blank=True, max_length=700, null=True)),
+                ("priority", models.IntegerField(default=0, verbose_name="Приоритет")),
+                ("create_at", models.DateTimeField(auto_now=True)),
+                (
+                    "organization",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="src.organization",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Изображение',
-                'verbose_name_plural': 'Изображения',
+                "verbose_name": "Изображение",
+                "verbose_name_plural": "Изображения",
             },
         ),
         migrations.AddField(
-            model_name='organization',
-            name='organization_type',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='src.organizationtype'),
+            model_name="organization",
+            name="organization_type",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, to="src.organizationtype"
+            ),
         ),
         migrations.CreateModel(
-            name='Service',
+            name="Service",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=30, verbose_name='Название')),
-                ('short_description', models.CharField(blank=True, max_length=150, null=True, verbose_name='Короткое описание')),
-                ('price', models.PositiveIntegerField(verbose_name='Стоимость')),
-                ('min_time', models.IntegerField(verbose_name='Минимальная длительность процедуры')),
-                ('create_at', models.DateTimeField(auto_now=True)),
-                ('master', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='src.master')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("title", models.CharField(max_length=30, verbose_name="Название")),
+                (
+                    "short_description",
+                    models.CharField(
+                        blank=True,
+                        max_length=150,
+                        null=True,
+                        verbose_name="Короткое описание",
+                    ),
+                ),
+                ("price", models.PositiveIntegerField(verbose_name="Стоимость")),
+                (
+                    "min_time",
+                    models.IntegerField(
+                        verbose_name="Минимальная длительность процедуры"
+                    ),
+                ),
+                ("create_at", models.DateTimeField(auto_now=True)),
+                (
+                    "master",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="src.master"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Услуга',
-                'verbose_name_plural': 'Услуги',
+                "verbose_name": "Услуга",
+                "verbose_name_plural": "Услуги",
             },
         ),
         migrations.CreateModel(
-            name='Order',
+            name="Order",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('begin_date', models.DateField(verbose_name='Дата начала')),
-                ('begin_time', models.TimeField(verbose_name='Время начала')),
-                ('length_time', models.IntegerField(blank=True, editable=False, null=True, verbose_name='Длительность процедуры')),
-                ('status', models.CharField(choices=[('new', 'Новый'), ('in-progress', 'В прогрессе'), ('done', 'Закончено')], default='new', max_length=20, verbose_name='Статус')),
-                ('customer_phone', models.CharField(max_length=30, verbose_name='Номер телефона клиента')),
-                ('customer_name', models.CharField(max_length=60, verbose_name='Имя клиента')),
-                ('customer_notice', models.CharField(blank=True, max_length=120, null=True, verbose_name='Коментарий')),
-                ('payment_id', models.CharField(blank=True, default=' ', max_length=200, null=True)),
-                ('payment_link', models.CharField(blank=True, default=' ', max_length=500, null=True)),
-                ('create_at', models.DateTimeField(auto_now=True)),
-                ('customer', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='src.customer', verbose_name='Клиент')),
-                ('services', models.ManyToManyField(to='src.service')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("begin_date", models.DateField(verbose_name="Дата начала")),
+                ("begin_time", models.TimeField(verbose_name="Время начала")),
+                (
+                    "length_time",
+                    models.IntegerField(
+                        blank=True,
+                        editable=False,
+                        null=True,
+                        verbose_name="Длительность процедуры",
+                    ),
+                ),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("new", "Новый"),
+                            ("in-progress", "В прогрессе"),
+                            ("done", "Закончено"),
+                        ],
+                        default="new",
+                        max_length=20,
+                        verbose_name="Статус",
+                    ),
+                ),
+                (
+                    "customer_phone",
+                    models.CharField(
+                        max_length=30, verbose_name="Номер телефона клиента"
+                    ),
+                ),
+                (
+                    "customer_name",
+                    models.CharField(max_length=60, verbose_name="Имя клиента"),
+                ),
+                (
+                    "customer_notice",
+                    models.CharField(
+                        blank=True, max_length=120, null=True, verbose_name="Коментарий"
+                    ),
+                ),
+                (
+                    "payment_id",
+                    models.CharField(
+                        blank=True, default=" ", max_length=200, null=True
+                    ),
+                ),
+                (
+                    "payment_link",
+                    models.CharField(
+                        blank=True, default=" ", max_length=500, null=True
+                    ),
+                ),
+                ("create_at", models.DateTimeField(auto_now=True)),
+                (
+                    "customer",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="src.customer",
+                        verbose_name="Клиент",
+                    ),
+                ),
+                ("services", models.ManyToManyField(to="src.service")),
             ],
             options={
-                'verbose_name': 'Заказ',
-                'verbose_name_plural': 'Заказы',
+                "verbose_name": "Заказ",
+                "verbose_name_plural": "Заказы",
             },
         ),
     ]
