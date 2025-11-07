@@ -1,18 +1,99 @@
-- name: Deploy FixMaster app
+- name: Deploy FixMaster app with rollback
   hosts: all
   become: yes
+
   vars:
-    compose_project_dir: "/opt/app/"
+    compose_project_dir: "/opt/app"
+    compose_file: "docker-compose.yml"
+    backup_compose_file: "docker-compose.backup.yml"
+    healthcheck_enabled: false
+    healthcheck_url: "http://127.0.0.1/health"
+
   tasks:
-    - name: Pull the latest images and start the services
+    - name: Ensure compose project dir exists
+      ansible.builtin.file:
+        path: "{{ compose_project_dir }}"
+        state: directory
+
+    - name: Backup current docker-compose file if exists
+      ansible.builtin.copy:
+        src: "{{ compose_project_dir }}/{{ compose_file }}"
+        dest: "{{ compose_project_dir }}/{{ backup_compose_file }}"
+        remote_src: yes
+        backup: yes
+      ignore_errors: yes
+      register: backup_result
+
+    - name: Deploy new version with docker compose
       community.docker.docker_compose_v2:
         project_src: "{{ compose_project_dir }}"
-        pull: always  
-        build: always  
-        state: present  
-        recreate: auto  
-        remove_orphans: no  
-        dependencies: yes  
-      register: compose_output
+        pull: always
+        build: always
+        state: present
+        recreate: auto
+        remove_orphans: false
+        dependencies: true
+      register: deploy_result
 
-    
+    - name: Wait for containers to start
+      ansible.builtin.pause:
+        seconds: 10
+
+    - name: Check running containers status
+      ansible.builtin.command: docker ps --format '{{ "{{.Names}} {{.Status}}" }}'
+      register: docker_ps
+      changed_when: false
+
+    - name: Fail if any container is not healthy or restarting
+      ansible.builtin.assert:
+        that:
+          - docker_ps.stdout_lines | length > 0
+          - docker_ps.stdout_lines | select("search", "Restarting") | list | length == 0
+          - docker_ps.stdout_lines | select("search", "unhealthy") | list | length == 0
+        fail_msg: "One or more containers are unhealthy or restarting after deploy"
+        success_msg: "All containers look healthy from docker ps"
+
+    - name: Optional HTTP healthcheck
+      ansible.builtin.uri:
+        url: "{{ healthcheck_url }}"
+        method: GET
+        status_code: 200
+        return_content: no
+      register: http_health
+      when: healthcheck_enabled
+      failed_when: http_health.status != 200
+
+    - name: Mark deploy successful
+      ansible.builtin.debug:
+        msg: "Deploy succeeded"
+
+  rescue:
+    - name: Deploy failed, starting rollback
+      ansible.builtin.debug:
+        msg: "Deploy failed. Rolling back to previous version..."
+
+    - name: Stop new stack
+      community.docker.docker_compose_v2:
+        project_src: "{{ compose_project_dir }}"
+        state: absent
+      ignore_errors: yes
+
+    - name: Restore previous docker-compose file if backup exists
+      ansible.builtin.copy:
+        src: "{{ compose_project_dir }}/{{ backup_compose_file }}"
+        dest: "{{ compose_project_dir }}/{{ compose_file }}"
+        remote_src: yes
+      ignore_errors: yes
+
+    - name: Start previous version from backup
+      community.docker.docker_compose_v2:
+        project_src: "{{ compose_project_dir }}"
+        state: present
+        recreate: auto
+        remove_orphans: false
+        dependencies: true
+      ignore_errors: yes
+
+    - name: Fail play after rollback
+      ansible.builtin.fail:
+        msg: "Deploy failed. Rollback executed."
