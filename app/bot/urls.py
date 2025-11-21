@@ -5,7 +5,6 @@ from bot.views import (
     BotModeratorGetProfileView,
     BotVerifyOrganizationView,
     BotGetOrganizationByTelegramIdView,
-    BotGetOrganizationDataByTelegramIdView,
     MasterActionView,
     ServiceActionView,
     MasterVerifyView,
@@ -32,11 +31,6 @@ urlpatterns = [
         "organization/get-by-telegram_id/<str:telegram_id>",
         BotGetOrganizationByTelegramIdView.as_view(),
         name="bot-organization-get-by-telegram_id",
-    ),
-    path(
-        "organization-data/get-by-telegram_id/<str:telegram_id>",
-        BotGetOrganizationDataByTelegramIdView.as_view(),
-        name="bot-organization_data-get-by-telegram_id",
     ),
     path(
         "moderator/", BotModeratorGetProfileView.as_view(), name="get-moderator-profile"

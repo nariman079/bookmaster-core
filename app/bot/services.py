@@ -1,4 +1,5 @@
 from datetime import datetime
+import socket
 
 from django.db.models import F
 from django.db.transaction import atomic
@@ -274,6 +275,10 @@ class BotOrganizationCreate(BaseService):
                 "successfully_created": created,
             },
         )
+    
+    def get_moderator_for_send_message(self) -> Moderator:
+        """Получение модератора"""
+        return Moderator.objects.first()
 
     def _send_notification(self):
         try:
@@ -284,7 +289,35 @@ class BotOrganizationCreate(BaseService):
                     "organization_id": self.organization_obj.pk,
                 },
             )
-            send_message_on_moderator_about_organization.delay(self.organization_obj.pk)
+
+            # send_message_on_moderator_about_organization.delay(self.organization_obj.pk)
+            moderator = self.get_moderator_for_send_message()
+            message_data = {
+                "event": "order.create",
+                "notification_type": "telegram",
+                "data": {
+                  
+                    "title": self.organization_obj.title,
+                    "address": self.organization_obj.address,
+                    "contact_phone": self.organization_obj.contact_phone,
+                    "organization_type": self.organization_obj.organization_type.title,
+                    "time_begin": self.organization_obj.time_begin.isoformat(),
+                    "time_end": self.organization_obj.time_end.isoformat(),
+                    "organization_id": self.organization_obj.pk,
+                    "moderator_id": moderator.pk,
+                    "moderator_telegram_id": moderator.telegram_id,
+                },
+                "metadata": {
+                    "request_id": self.logger.request_id,
+                    "timestamp": timezone.now().isoformat(),
+                    "source": "bookingmaster-bot",
+                    "instance_id": socket.gethostname(),
+                },
+                "_from": "bot",
+            }
+            send_message_in_broker.delay(message_data)
+            
+
             self.logger.info(
                 "Уведомление модератору поставлено в очередь Celery",
                 extra={
@@ -885,7 +918,7 @@ class BotVerifyOrganization(BaseService):
                 },
             )
 
-    @transaction.atomic
+    @atomic
     def execute(self):
         self.get_organization()
         status_changed = self.check_and_update_verify_status()
@@ -1140,7 +1173,7 @@ class MasterDeleteSrv(BaseService):
                 },
             )
 
-    @transaction.atomic
+    @atomic
     def delete_master(self):
         deleted_count, _ = self.master.delete()
         if deleted_count == 0:

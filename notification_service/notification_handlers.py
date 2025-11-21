@@ -8,6 +8,7 @@ from notification_service.services import (
     VerifyMasterNotificationService,
     master_bot,
     organization_bot,
+    moderator_bot
 )
 
 logger = logging.getLogger(__name__)
@@ -184,11 +185,6 @@ async def master_telegram_linked_handler(event: Event, extra: dict):
                 extra={"error": str(e), "telegram_id": telegram_id},
             )
 
-# ВНИМАНИЕ:
-# Событие "master.verify" уже обрабатывается в verify_master.
-# Дополнительный хендлер master_verify_handler удалён,
-# чтобы избежать двойной регистрации одного и того же события.
-
 
 # --- События услуг ---
 @event_handler('service.created')
@@ -237,6 +233,118 @@ async def service_deleted_handler(event: Event, extra: dict):
 
 
 # --- События организаций ---
+
+@event_handler('organization.created')
+async def organization_created_handler(event: Event, extra: dict):
+    """
+    Event: create organization
+
+    Waited fields in event.data:
+      - title
+      - address
+      - contact_phone
+      - organization_type
+      - time_begin
+      - time_end
+      - organization_id
+    """
+    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+    
+    # Получаем данные из event.data
+    title = event.data.get("title")
+    address = event.data.get("address")
+    contact_phone = event.data.get("contact_phone")
+    organization_type = event.data.get("organization_type")
+    time_begin = event.data.get("time_begin")
+    time_end = event.data.get("time_end")
+    organization_id = event.data.get("organization_id")
+    moderator_id = event.data.get('moderator_id')
+    moderator_telegram_id = event.data.get("moderator_telegram_id")
+
+    if not all([
+        title, 
+        address, 
+        contact_phone, 
+        organization_type, 
+        time_begin, 
+        time_end, 
+        organization_id,
+        ]):
+        logger.error(
+            "organization.created: missing required fields",
+            extra={
+                "event_data": event.data,
+                "required_fields": ["title", "address", "contact_phone", "organization_type", "time_begin", "time_end", "organization_id"]
+            },
+        )
+        return
+    
+    # Получаем модератора для отправки сообщения
+    
+    if  not moderator_telegram_id:
+        logger.error(
+            "organization.created: no moderator found or moderator has no telegram_id",
+            extra={"event_data": event.data},
+        )
+        return
+    
+    # Формируем ссылку на галерею
+    gallery_url = f"https://booking.fix-mst.ru/admin/src/image/?organization__id__exact={organization_id}"
+    
+    # Формируем сообщение
+    message = f"""Новая заявка на верификацию!🟩🟩🟩
+Название: {title}
+Адрес: {address}
+Номер телефона: {contact_phone}
+Тип организации: {organization_type}
+Начало рабочего дня: {time_begin}
+Конец рабочего дня: {time_end}
+
+Ссылка на галерею: {gallery_url}"""
+    
+    verify_true_button = InlineKeyboardButton(
+        "✅ Верифицировать",
+        callback_data=f"organization_verify_true_{organization_id}"
+    )
+    verify_false_button = InlineKeyboardButton(
+        "❌ Не верифицировать", 
+        callback_data=f"organization_verify_false_{organization_id}"
+    )
+
+    inline_markup = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                verify_true_button, verify_false_button
+            ]
+        ]
+    )
+    
+    try:
+        await moderator_bot.send_message(
+            chat_id=moderator_telegram_id,
+            text=message,
+            reply_markup=inline_markup
+        )
+        logger.info(
+            "Organization creation notification sent to moderator",
+            extra={
+                "organization_id": organization_id,
+                "moderator_id": moderator.id,
+                "telegram_id": moderator.telegram_id,
+                "request_id": extra.get("request_id"),
+            },
+        )
+    except Exception as e:
+        logger.error(
+            "Failed to send organization.created notification",
+            extra={
+                "error": str(e),
+                "moderator_telegram_id": moderator_telegram_id,
+                "organization_id": organization_id,
+            },
+        )
+
+    
 @event_handler('organization.verified')
 async def organization_verified_handler(event: Event, extra: dict):
     """
@@ -261,13 +369,26 @@ async def organization_verified_handler(event: Event, extra: dict):
         "Теперь вы можете добавлять мастеров и услуг."
     )
 
-    kb = ReplyKeyboardMarkup(resize_keyboard=True)
-    kb.add(KeyboardButton("📃 Список мастеров"))
-    kb.add(KeyboardButton("👥 Список клиентов"))
-    kb.add(KeyboardButton("➕ Добавить мастера"))
+    kb = ReplyKeyboardMarkup(
+        resize_keyboard=True,
+        keyboard=[
+            [
+                KeyboardButton("📃 Список мастеров"), 
+                KeyboardButton("👥 Список клиентов")
+            ],
+            [
+                KeyboardButton("➕ Добавить мастера")
+            ]
+        ]
+    )
+    
 
     try:
-        await organization_bot.send_message(chat_id=telegram_id, text=message, reply_markup=kb)
+        await organization_bot.send_message(
+            chat_id=telegram_id, 
+            text=message, 
+            reply_markup=kb
+        )
     except Exception as e:
         logger.error(
             "Failed to send organization.verified notification",

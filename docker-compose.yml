@@ -119,7 +119,7 @@ services:
     command: >
       sh -c "
       sleep 10 &&
-      poetry run celery -A config worker -l INFO
+      poetry run celery -A config worker -l WARNING
       "
     volumes:
       - ./app:/app
@@ -234,7 +234,8 @@ services:
       - loki
     networks:
       - net
-  
+
+
   nginx:
     image: nginx:latest
     ports:
@@ -248,5 +249,3 @@ services:
       - app
     networks:
       - net
-
-

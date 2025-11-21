@@ -10,7 +10,6 @@ from bot.services import (
     BotModeratorGetProfile,
     BotVerifyOrganization,
     BotGetOrganizationByTelegramId,
-    BotGetOrganizationDataByTelegramId,
     MasterDeleteSrv,
     MasterCreateSrv,
     MasterEditSrv,
@@ -187,23 +186,7 @@ class BotGetOrganizationByTelegramIdView(APIView):
         )
 
 
-class BotGetOrganizationDataByTelegramIdView(APIView):
-    def get(self, *args, **kwargs):
-        if api_key_permission(request=self.request):
-            organization_data = dict(telegram_id=kwargs.get("telegram_id"))
-            get_organization_by_telegram_id = BotGetOrganizationDataByTelegramId(
-                organization_data=organization_data
-            )
-            return get_organization_by_telegram_id.execute()
 
-        return Response(
-            {
-                "message": "Неизвествная ошибка\nОбратитесь к администратору @nariman079i",
-                "success": False,
-                "data": ["Неверный API-KEY"],
-            },
-            status=422,
-        )
 
 
 class MasterActionView(APIView):
