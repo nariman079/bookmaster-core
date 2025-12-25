@@ -12,10 +12,10 @@ networks:
 
 services:
   db:
-    image: postgres
+    image: postgres:18
     restart: always
     volumes:
-      - pg-data-fixmaster:/var/lib/postgresql/data
+      - pg-data-fixmaster:/var/lib/postgresql
     env_file:
       - .env
     networks:
