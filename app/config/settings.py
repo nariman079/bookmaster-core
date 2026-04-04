@@ -264,7 +264,7 @@ def dict_get(name: str) -> None | dict:
 
 CELERY_BROKER_URL = "redis://redis:6379"
 CELERY_TIMEZONE = "Europe/Moscow"
-4
+
 FIXMASTER_CLIENT_BOT_TOKEN = os.getenv("FIXMASTER_CLIENT_BOT_TOKEN", 'test')
 FIXMASTER_MASTER_BOT_TOKEN = os.getenv("FIXMASTER_MASTER_BOT_TOKEN", 'test')
 FIXMASTER_MODERATOR_BOT_TOKEN = os.getenv("FIXMASTER_MODERATOR_BOT_TOKEN", 'test')
