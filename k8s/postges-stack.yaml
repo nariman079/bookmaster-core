@@ -1,0 +1,107 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi # Выделяем 2 Гб под базу
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secret
+  namespace: default
+type: Opaque
+stringData:
+  POSTGRES_USER: "fixmaster_user"
+  POSTGRES_PASSWORD: "SuperSecretPass123"
+  POSTGRES_DB: "fixmaster_db"
+  # Пароль суперпользователя (postgres)
+  POSTGRES_POSTGRES_PASSWORD: "RootSecretPass123"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-deployment
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:17-alpine
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: postgres-secret
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+          # Проверка живости
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "fixmaster_user"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: default
+spec:
+  selector:
+    app: postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP
+---
+# Job создаст базу данных, если её нет (на случай если образ чистый)
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postgres-init-job
+  namespace: default
+spec:
+  template:
+    spec:
+      containers:
+        - name: init-db
+          image: postgres:17-alpine
+          command: ['/bin/sh', '-c']
+          args:
+            - |
+              echo "Waiting for Postgres to be ready..."
+              until pg_isready -h postgres-service -p 5432 -U fixmaster_user; do
+                sleep 2
+              done
+              
+              echo "Database is ready. Checking if DB exists..."
+              # Проверяем, существует ли база. Если нет - создаем.
+              PGPASSWORD=$POSTGRES_PASSWORD psql -h postgres-service -U fixmaster_user -d postgres -tc "SELECT 1 FROM pg_database WHERE datname='$POSTGRES_DB'" | grep -q 1 || \
+              PGPASSWORD=$POSTGRES_PASSWORD psql -h postgres-service -U fixmaster_user -d postgres -c "CREATE DATABASE $POSTGRES_DB;"
+              
+              echo "Setup complete."
+          envFrom:
+            - secretRef:
+                name: postgres-secret
+      restartPolicy: OnFailure
+  backoffLimit: 5
