@@ -13,6 +13,8 @@ spec:
       labels:
         app: fixmaster
     spec:
+      strategy:
+        type: Recreate
       containers:
         - name: fixmaster
           image: nariman079i/fixmaster:latest
