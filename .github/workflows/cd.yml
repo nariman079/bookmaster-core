@@ -8,6 +8,10 @@ on:
       - master
       - release/*
 
+env:
+  APP_NAME: fixmaster
+  VERSION: ${{ github.sha }}
+  DOCKER_IMAGE: ${{ secrets.DOCKER_USERNAME }}/fixmaster
 
 permissions:
   contents: read
@@ -23,42 +27,13 @@ jobs:
       - name: Checkout code 
         uses: actions/checkout@v4
 
-
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-    
       - name: Build and push images
         run: |
-          docker compose -f docker-compose.yml build
-          docker compose -f docker-compose.yml push
-
-      - name: Setup SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.PROD_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.PROD_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Copy deploy.yml to server
-        uses: appleboy/scp-action@v0.1.5
-        with:
-          host: ${{ secrets.PROD_HOST }}      
-          username: ${{ secrets.PROD_USER }} 
-          key: ${{ secrets.PROD_SSH_KEY }}     
-          source: "docker-compose.yml,.env,conf/,Dockerfile,app/"
-          target: "/opt/app/"
-  
-  
-      - name: Run Ansible Playbook
-        run: |
-          ansible-playbook -i "${{ secrets.PROD_HOST }}," \
-            -u ${{ secrets.PROD_USER }} \
-            --private-key ~/.ssh/id_rsa \
-            deploy.yml \
-            --extra-vars "github_sha=${{ github.sha }}"
-
-     
+          docker build . -t ${{ secrets.DOCKER_USERNAME }}/${{ APP_NAME }}:latest
+          docker push  ${{ secrets.DOCKER_USERNAME }}/${{ APP_NAME }}:latest
