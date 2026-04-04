@@ -2,7 +2,7 @@ from django.conf import settings
 
 
 class TeleBot():
-    def __init__(self, token: str):
+    def __init__(self, token: str | None = None):
         pass
 
 client_bot = TeleBot(settings.FIXMASTER_CLIENT_BOT_TOKEN)
