@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fixmaster-deployment
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fixmaster
+  template:
+    metadata:
+      labels:
+        app: fixmaster
+    spec:
+      containers:
+        - name: fixmaster
+          image: nariman079i/fixmaster:latest
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 8000
+            protocol: TCP
+          command: ['/bin/sh', '-c']
+          args:
+            - |
+              python manage.py migrate && 
+              python manage.py collectstatic --noinput &&
+              uvicorn config.asgi:application --host 0.0.0.0 --port 8000
+          envFrom:
+            - sercretRef:
+                name: fixmaster-secret

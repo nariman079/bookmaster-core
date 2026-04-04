@@ -67,11 +67,8 @@ cd fixmaster_backend
 ### 2. Создать `.env` файл
 
 ```env
-WEB_HOST=you_domain_host
-AAIO_API_KEY=you_payment_system_key
 SECRET_KEY=django-insecure-you_secret_key
 DJANGO_SETTINGS_MODULE=config.settings
-TEST_DB=False
 FIXMASTER_CLIENT_BOT_TOKEN=TOKEN
 FIXMASTER_MASTER_BOT_TOKEN=TOKEN
 FIXMASTER_MODERATOR_BOT_TOKEN=TOKEN

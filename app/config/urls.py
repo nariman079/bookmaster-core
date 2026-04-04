@@ -11,14 +11,12 @@ from drf_spectacular.views import (
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
-
+from src.admin import content_management_admin
+from src.views.csm_metrics_views import metrics_view
 
 def index(request):
     return render(request, "index.html")
 
-
-from src.admin import content_management_admin
-from src.views.csm_metrics_views import metrics_view
 
 urlpatterns = [
     path("", index),
