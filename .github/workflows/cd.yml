@@ -35,5 +35,5 @@ jobs:
 
       - name: Build and push images
         run: |
-          docker build . -t ${{ secrets.DOCKER_USERNAME }}/${{ APP_NAME }}:latest
-          docker push  ${{ secrets.DOCKER_USERNAME }}/${{ APP_NAME }}:latest
+          docker build . -t ${{ secrets.DOCKER_USERNAME }}/${{ env.APP_NAME }}:latest
+          docker push  ${{ secrets.DOCKER_USERNAME }}/${{ env.APP_NAME }}:latest
