@@ -14,9 +14,6 @@ RUN pip install --no-cache-dir poetry==$POETRY_VERSION
 COPY pyproject.toml poetry.lock ./
 RUN poetry install --no-root --only main --no-interaction --no-ansi
 
-
-
-
 # Этап 2: Финальный образ
 FROM python:3.12-slim AS runtime
 ENV PYTHONUNBUFFERED=1 \

@@ -244,11 +244,19 @@ LOGGING = {
     },
 }
 
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", None)
+REDIS_HOST = os.getenv("REDIS_PASSWORD", "redis-service")
+REDIS_PORT = os.getenv("REDIS_PORT", "6379")
+
+if not REDIS_PASSWORD:
+    raise ImportError(f"Not found environment element REDIS_PASSWORD")
+
+REDIS_URL = f"redis://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/0"
 
 cache = redis.Redis(
-    host="redis",
+    host=REDIS_HOST,
+    password=REDIS_PASSWORD
 )
-
 
 def dict_set(name: str, data: dict):
     """Создание dict в redis"""
@@ -262,7 +270,7 @@ def dict_get(name: str) -> None | dict:
     return None
 
 
-CELERY_BROKER_URL = "redis://redis:6379"
+CELERY_BROKER_URL = REDIS_URL
 CELERY_TIMEZONE = "Europe/Moscow"
 
 FIXMASTER_CLIENT_BOT_TOKEN = os.getenv("FIXMASTER_CLIENT_BOT_TOKEN", 'test')
