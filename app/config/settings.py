@@ -245,7 +245,7 @@ LOGGING = {
 }
 
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", None)
-REDIS_HOST = os.getenv("REDIS_PASSWORD", "redis-service")
+REDIS_HOST = os.getenv("REDIS_HOST", "redis-service")
 REDIS_PORT = os.getenv("REDIS_PORT", "6379")
 
 if not REDIS_PASSWORD:
