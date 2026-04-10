@@ -279,7 +279,7 @@ AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 
 # Проверка на случай, если ключи не переданы (чтобы сразу увидеть ошибку)
 if not AWS_ACCESS_KEY_ID or not AWS_SECRET_ACCESS_KEY:
-    raise ImproperlyConfigured("Set the AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables")
+    raise ImportError("Set the AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables")
 
 AWS_S3_REGION_NAME = 'us-east-1'
 AWS_S3_ENDPOINT_URL = 'http://minio-api-service:9000'
@@ -310,8 +310,8 @@ STORAGES = {
 }
 
 # URL-адреса для шаблонов
-STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_STATIC_BUCKET_NAME}/'
-MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_STORAGE_BUCKET_NAME}/'
+STATIC_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/{AWS_STATIC_BUCKET_NAME}/'
+MEDIA_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/{AWS_STORAGE_BUCKET_NAME}/'
 
 # STATIC_ROOT больше не нужен для S3, но Django может требовать его наличия.
 # Оставьте его пустым или None, он не будет использоваться для записи.
