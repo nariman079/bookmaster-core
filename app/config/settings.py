@@ -23,7 +23,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-ROOT_APPS = ["src", "bot"]
+ROOT_APPS = ["src", "bot", "storages"]
 INSTALLED_APPS = [
     "django_celery_beat",
     "django.contrib.admin",
@@ -112,12 +112,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
-STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
-
-MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -244,7 +238,7 @@ LOGGING = {
     },
 }
 
-REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", None)
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", "test")
 REDIS_HOST = os.getenv("REDIS_HOST", "redis-service")
 REDIS_PORT = os.getenv("REDIS_PORT", "6379")
 
@@ -277,3 +271,33 @@ FIXMASTER_CLIENT_BOT_TOKEN = os.getenv("FIXMASTER_CLIENT_BOT_TOKEN", 'test')
 FIXMASTER_MASTER_BOT_TOKEN = os.getenv("FIXMASTER_MASTER_BOT_TOKEN", 'test')
 FIXMASTER_MODERATOR_BOT_TOKEN = os.getenv("FIXMASTER_MODERATOR_BOT_TOKEN", 'test')
 FIXMASTER_ORGANIZATION_BOT_TOKEN = os.getenv("FIXMASTER_ORGANIZATION_BOT_TOKEN", 'test')
+
+
+# Базовые настройки S3
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+AWS_S3_REGION_NAME = 'us-east-1' # Для MinIO обычно неважно
+
+# ВАЖНО: Внутренний адрес для связи Django -> MinIO внутри K8s
+AWS_S3_ENDPOINT_URL = 'http://minio-api-service:9000' 
+
+# ВАЖНО: Внешний домен, который увидят пользователи в браузере
+# Мы используем твой s3 домен из Ingress
+AWS_S3_CUSTOM_DOMAIN = 's3.72.56.248.210.nip.io/api-s3'
+
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
+
+# --- Настройки STATIC (CSS, JS, Админка) ---
+STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'
+AWS_STATIC_BUCKET_NAME = 'production-static'
+STATIC_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/{AWS_STATIC_BUCKET_NAME}/'
+
+# --- Настройки MEDIA (Загрузки пользователей) ---
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+AWS_STORAGE_BUCKET_NAME = 'production-media'
+MEDIA_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/{AWS_STORAGE_BUCKET_NAME}/'
+
+# Чтобы Django не добавляла лишние параметры запроса к ссылкам
+AWS_QUERYSTRING_AUTH = False

@@ -3,11 +3,11 @@ kind: Ingress
 metadata:
   name: fixmaster-ingress
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   ingressClassName: nginx
   rules:
-    - http:
+    - host: 72.56.248.210.niq.io
+      http:
         paths:
           - path: /
             pathType: Prefix

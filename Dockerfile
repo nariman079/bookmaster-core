@@ -5,10 +5,6 @@ ENV PYTHONUNBUFFERED=1 \
     POETRY_HOME="/opt/poetry" \
     POETRY_VIRTUALENVS_CREATE=false \
     POETRY_CACHE_DIR="/tmp/poetry_cache"
-
-
-
-
     
 RUN pip install --no-cache-dir poetry==$POETRY_VERSION
 COPY pyproject.toml poetry.lock ./
@@ -35,7 +31,7 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 
 
 COPY app/ $APP_HOME
-COPY pyproject.toml #APP_HOME
+COPY pyproject.toml $APP_HOME
 RUN chown -R appuser:appuser $APP_HOME
 
 USER appuser
