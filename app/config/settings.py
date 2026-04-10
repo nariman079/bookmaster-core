@@ -292,12 +292,13 @@ AWS_S3_OBJECT_PARAMETERS = {
 # --- Настройки STATIC (CSS, JS, Админка) ---
 STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'
 AWS_STATIC_BUCKET_NAME = 'production-static'
+STATIC_ROOT = 'static'
 STATIC_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/{AWS_STATIC_BUCKET_NAME}/'
 
 # --- Настройки MEDIA (Загрузки пользователей) ---
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 AWS_STORAGE_BUCKET_NAME = 'production-media'
 MEDIA_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/{AWS_STORAGE_BUCKET_NAME}/'
-
+MEDIA_ROOT = 'media'
 # Чтобы Django не добавляла лишние параметры запроса к ссылкам
 AWS_QUERYSTRING_AUTH = False
