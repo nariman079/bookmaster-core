@@ -273,32 +273,46 @@ FIXMASTER_MODERATOR_BOT_TOKEN = os.getenv("FIXMASTER_MODERATOR_BOT_TOKEN", 'test
 FIXMASTER_ORGANIZATION_BOT_TOKEN = os.getenv("FIXMASTER_ORGANIZATION_BOT_TOKEN", 'test')
 
 
-# Базовые настройки S3
+
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
-AWS_S3_REGION_NAME = 'us-east-1' # Для MinIO обычно неважно
 
-# ВАЖНО: Внутренний адрес для связи Django -> MinIO внутри K8s
-AWS_S3_ENDPOINT_URL = 'http://minio-api-service:9000' 
+# Проверка на случай, если ключи не переданы (чтобы сразу увидеть ошибку)
+if not AWS_ACCESS_KEY_ID or not AWS_SECRET_ACCESS_KEY:
+    raise ImproperlyConfigured("Set the AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables")
 
-# ВАЖНО: Внешний домен, который увидят пользователи в браузере
-# Мы используем твой s3 домен из Ingress
+AWS_S3_REGION_NAME = 'us-east-1'
+AWS_S3_ENDPOINT_URL = 'http://minio-api-service:9000'
 AWS_S3_CUSTOM_DOMAIN = 's3.72.56.248.210.nip.io/api-s3'
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+AWS_QUERYSTRING_AUTH = False
 
-AWS_S3_OBJECT_PARAMETERS = {
-    'CacheControl': 'max-age=86400',
+# Имена бакетов
+AWS_STORAGE_BUCKET_NAME = 'production-media'
+AWS_STATIC_BUCKET_NAME = 'production-static'
+
+# --- КОНФИГУРАЦИЯ ХРАНИЛИЩ (Django 4.2+) ---
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        "OPTIONS": {
+            "bucket_name": AWS_STORAGE_BUCKET_NAME,
+        }
+    },
+    "staticfiles": {
+        "BACKEND": "storages.backends.s3boto3.S3StaticStorage",
+        "OPTIONS": {
+            "bucket_name": AWS_STATIC_BUCKET_NAME,
+            # Важно: location='' предотвращает создание подпапки 'static' внутри бакета
+            "location": "", 
+        }
+    },
 }
 
-# --- Настройки STATIC (CSS, JS, Админка) ---
-STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'
-AWS_STATIC_BUCKET_NAME = 'production-static'
-STATIC_ROOT = 'static'
-STATIC_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/{AWS_STATIC_BUCKET_NAME}/'
+# URL-адреса для шаблонов
+STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_STATIC_BUCKET_NAME}/'
+MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_STORAGE_BUCKET_NAME}/'
 
-# --- Настройки MEDIA (Загрузки пользователей) ---
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-AWS_STORAGE_BUCKET_NAME = 'production-media'
-MEDIA_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/{AWS_STORAGE_BUCKET_NAME}/'
-MEDIA_ROOT = 'media'
-# Чтобы Django не добавляла лишние параметры запроса к ссылкам
-AWS_QUERYSTRING_AUTH = False
+# STATIC_ROOT больше не нужен для S3, но Django может требовать его наличия.
+# Оставьте его пустым или None, он не будет использоваться для записи.
+STATIC_ROOT = None
