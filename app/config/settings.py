@@ -295,7 +295,7 @@ AWS_STATIC_BUCKET_NAME = 'production-static'
 # Настройка STORAGES (Django 4.2+)
 STORAGES = {
     "default": {
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        "BACKEND": "config.custom_storages.CustomS3MediaStorage",
         "OPTIONS": {
             "bucket_name": AWS_STORAGE_BUCKET_NAME,
             "querystring_auth": AWS_QUERYSTRING_AUTH,  # Явно отключаем подпись
@@ -309,7 +309,7 @@ STORAGES = {
         }
     },
     "staticfiles": {
-        "BACKEND": "storages.backends.s3boto3.S3StaticStorage",
+        "BACKEND": "config.custom_storages.CustomS3StaticStorage",
         "OPTIONS": {
             "bucket_name": AWS_STATIC_BUCKET_NAME,
             "querystring_auth": AWS_QUERYSTRING_AUTH,  # Отключаем подпись для статики
