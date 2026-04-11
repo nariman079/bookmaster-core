@@ -272,12 +272,9 @@ FIXMASTER_MASTER_BOT_TOKEN = os.getenv("FIXMASTER_MASTER_BOT_TOKEN", 'test')
 FIXMASTER_MODERATOR_BOT_TOKEN = os.getenv("FIXMASTER_MODERATOR_BOT_TOKEN", 'test')
 FIXMASTER_ORGANIZATION_BOT_TOKEN = os.getenv("FIXMASTER_ORGANIZATION_BOT_TOKEN", 'test')
 
-
-
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 
-# Проверка на случай, если ключи не переданы (чтобы сразу увидеть ошибку)
 if not AWS_ACCESS_KEY_ID or not AWS_SECRET_ACCESS_KEY:
     raise ImportError("Set the AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables")
 
@@ -285,35 +282,37 @@ AWS_S3_REGION_NAME = 'us-east-1'
 AWS_S3_ENDPOINT_URL = 'http://minio-api-service:9000'
 AWS_S3_CUSTOM_DOMAIN = 's3.72.56.248.210.nip.io'
 AWS_S3_SIGNATURE_VERSION = 's3v4'
-AWS_QUERYSTRING_AUTH = False
-AWS_S3_SECURE_URLS = False 
+AWS_QUERYSTRING_AUTH = False  # Без подписи в URL
+AWS_S3_SECURE_URLS = False     # Используем http
 
 # Имена бакетов
 AWS_STORAGE_BUCKET_NAME = 'production-media'
 AWS_STATIC_BUCKET_NAME = 'production-static'
 
-# --- КОНФИГУРАЦИЯ ХРАНИЛИЩ (Django 4.2+) ---
+# ✅ РАСКОММЕНТИРУЙТЕ И ИСПРАВЬТЕ URL-адреса
+# Важно: не добавляем слеш в начале, так как S3 ожидает bucket/путь
+STATIC_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/{AWS_STATIC_BUCKET_NAME}/'
+MEDIA_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/{AWS_STORAGE_BUCKET_NAME}/'
+
+# Настройка STORAGES (Django 4.2+)
 STORAGES = {
     "default": {
         "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
         "OPTIONS": {
             "bucket_name": AWS_STORAGE_BUCKET_NAME,
+            "querystring_auth": AWS_QUERYSTRING_AUTH,  # Явно отключаем подпись
+            "location": "",
         }
     },
     "staticfiles": {
         "BACKEND": "storages.backends.s3boto3.S3StaticStorage",
         "OPTIONS": {
             "bucket_name": AWS_STATIC_BUCKET_NAME,
-            # Важно: location='' предотвращает создание подпапки 'static' внутри бакета
-            "location": "", 
+            "querystring_auth": AWS_QUERYSTRING_AUTH,  # Отключаем подпись для статики
+            "location": "",
         }
     },
 }
 
-# URL-адреса для шаблонов
-# STATIC_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/{AWS_STATIC_BUCKET_NAME}/'
-# MEDIA_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/{AWS_STORAGE_BUCKET_NAME}/'
-
-# STATIC_ROOT больше не нужен для S3, но Django может требовать его наличия.
-# Оставьте его пустым или None, он не будет использоваться для записи.
+# STATIC_ROOT не используется, но Django требует
 STATIC_ROOT = None
