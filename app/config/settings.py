@@ -302,6 +302,12 @@ STORAGES = {
             "bucket_name": AWS_STORAGE_BUCKET_NAME,
             "querystring_auth": AWS_QUERYSTRING_AUTH,  # Явно отключаем подпись
             "location": "",
+            "access_key": AWS_ACCESS_KEY_ID,
+            "secret_key": AWS_SECRET_ACCESS_KEY,
+            "endpoint_url": AWS_S3_ENDPOINT_URL,
+            "custom_domain": AWS_S3_CUSTOM_DOMAIN,
+            "addressing_style": "auto",
+    
         }
     },
     "staticfiles": {
