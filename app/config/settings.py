@@ -291,8 +291,6 @@ AWS_STATIC_BUCKET_NAME = 'production-static'
 
 # ✅ РАСКОММЕНТИРУЙТЕ И ИСПРАВЬТЕ URL-адреса
 # Важно: не добавляем слеш в начале, так как S3 ожидает bucket/путь
-STATIC_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/{AWS_STATIC_BUCKET_NAME}/'
-MEDIA_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/{AWS_STORAGE_BUCKET_NAME}/'
 
 # Настройка STORAGES (Django 4.2+)
 STORAGES = {
@@ -322,3 +320,5 @@ STORAGES = {
 
 # STATIC_ROOT не используется, но Django требует
 STATIC_ROOT = None
+STATIC_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/{AWS_STATIC_BUCKET_NAME}/'
+MEDIA_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/{AWS_STORAGE_BUCKET_NAME}/'
