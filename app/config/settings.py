@@ -286,6 +286,7 @@ AWS_S3_ENDPOINT_URL = 'http://minio-api-service:9000'
 AWS_S3_CUSTOM_DOMAIN = 's3.72.56.248.210.nip.io'
 AWS_S3_SIGNATURE_VERSION = 's3v4'
 AWS_QUERYSTRING_AUTH = False
+AWS_S3_SECURE_URLS = False 
 
 # Имена бакетов
 AWS_STORAGE_BUCKET_NAME = 'production-media'
@@ -310,8 +311,8 @@ STORAGES = {
 }
 
 # URL-адреса для шаблонов
-STATIC_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/{AWS_STATIC_BUCKET_NAME}/'
-MEDIA_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/{AWS_STORAGE_BUCKET_NAME}/'
+# STATIC_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/{AWS_STATIC_BUCKET_NAME}/'
+# MEDIA_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/{AWS_STORAGE_BUCKET_NAME}/'
 
 # STATIC_ROOT больше не нужен для S3, но Django может требовать его наличия.
 # Оставьте его пустым или None, он не будет использоваться для записи.
