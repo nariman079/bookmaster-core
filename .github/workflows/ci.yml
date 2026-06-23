@@ -37,7 +37,7 @@ jobs:
         run: black --check .
 
       - name: Mypy type check
-        run: mypy app/
+        run: mypy ./
 
   tests:
     name: Unit Tests
