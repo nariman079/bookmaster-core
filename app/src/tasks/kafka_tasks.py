@@ -1,23 +1,21 @@
-import os
 import asyncio
 from celery import shared_task
 
-from src.utils.kafka import DjangoKafkaProducer
+from src.utils.kafka import DjangoRabbitMQProducer
 
-kafka_host = os.getenv("KAFKA_HOST")
 
 
 @shared_task
 def send_message_in_broker(message_data: dict, topic: str = "default_topic"):
-    """Отправка сообщения в Kafka из Celery (синхронный таск с асинхронной логикой)"""
+    """Отправка сообщения в RabbitMQ из Celery (синхронный таск с асинхронной логикой)"""
 
     async def _send():
-        producer = DjangoKafkaProducer(bootstrap_servers=kafka_host)
+        producer = DjangoRabbitMQProducer()
         try:
             await producer.start()
             print(message_data)
             await producer.send_message(
-                topic=topic, message_data=message_data, key=message_data.get("order_id")
+                queue_name=topic, message_data=message_data
             )
         finally:
             await producer.stop()

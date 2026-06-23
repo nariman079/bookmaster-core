@@ -1,0 +1,22 @@
+{
+    "name": "",
+    "phone": "",
+    "telegram": "",
+    "github": "",
+    "about": "",
+    "position": "",
+    "employment": "",
+    "format": "",
+    "skills": "",
+    "experience": [
+        {
+            "start_date": "",
+            "end_date": null,
+            "company": "",
+            "location": "",
+            "role": "",
+            "responsibilities": ""
+        }
+    ],
+    "education": []
+}

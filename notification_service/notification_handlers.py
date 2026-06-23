@@ -465,3 +465,38 @@ async def customer_telegram_linked_handler(event: Event, extra: dict):
             "Failed to send customer.telegram_linked notification",
             extra={"error": str(e), "master_telegram_id": master_telegram_id},
         )
+
+
+
+
+age = 18
+name = "Test"
+
+# str
+my_string = 'Книга "1894"'
+book_name = str(age)
+# int 
+money = 10000000
+age = 16
+students = 15
+# bool 
+is_active = True or False
+# float
+pi = 3.14
+bi = 0
+mass = 71.50
+long = 500.9
+height = 182.90
+number = "89238928392"
+
+# list
+users = [
+    1,2,3
+]
+# /start
+users.append(message)
+
+
+dict
+set
+tuple

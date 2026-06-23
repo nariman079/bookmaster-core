@@ -1,12 +1,14 @@
 from aiogram import Bot
 from notification_service.utils import RequestLogger
+from typing import Any
 
 master_bot = Bot(token="8502011901:AAEKrM1xQ2TRW-k1nuTOpEdczw4QPwN-tPk")
 organization_bot = Bot(token="8502011901:AAEKrM1xQ2TRW-k1nuTOpEdczw4QPwN-tPk")
+moderator_bot = Bot(token="8502011901:AAEKrM1xQ2TRW-k1nuTOpEdczw4QPwN-tPk")
 
 
 class CreateOrderNotificationService:
-    def __init__(self, data: dict[str, any]):
+    def __init__(self, data: dict[str, Any]):
         self.data = data
 
     async def _send_notification_on_master(self):
@@ -61,7 +63,7 @@ class CreateOrderNotificationService:
 
 
 class VerifyMasterNotificationService:
-    def __init__(self, data: dict[str, any]):
+    def __init__(self, data: dict[str, Any]):
         self.data = data
 
     async def _send_message_about_verified_master(self):

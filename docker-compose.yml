@@ -3,8 +3,8 @@ volumes:
   media:
   redis:
   grafana-storage:
-  loki-data:    
-  pg-data-fixmaster: 
+  loki-data:
+  pg-data-fixmaster:
 
 networks:
   net:
@@ -21,154 +21,165 @@ services:
     networks:
       - net
 
-  kafka:
-    image: confluentinc/cp-kafka:latest
+  rabbitmq:
+    image: rabbitmq:3-management
     ports:
-      - "9092:9092"
-    networks:
-      - net
+      - "5672:5672"
+      - "15672:15672"
     environment:
-      # KRaft mode — NO ZOOKEEPER
-      CLUSTER_ID: "nlt5fjLLRLSaO1Hm7Gpc5A"  
-      KAFKA_PROCESS_ROLES: "broker,controller"
-      KAFKA_NODE_ID: 1
-      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:29093"
-      KAFKA_LISTENERS: "SASL_PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:29093"
-      KAFKA_ADVERTISED_LISTENERS: "SASL_PLAINTEXT://kafka:9092"
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "SASL_PLAINTEXT:SASL_PLAINTEXT,CONTROLLER:PLAINTEXT"
-      KAFKA_INTER_BROKER_LISTENER_NAME: "SASL_PLAINTEXT"
-      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
-      KAFKA_SASL_ENABLED_MECHANISMS: "PLAIN"
-      KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: "PLAIN"
-      KAFKA_SASL_JAAS_CONFIG: |
-        org.apache.kafka.common.security.plain.PlainLoginModule required
-        username="admin"
-        password="admin-secret"
-        user_admin="admin-secret"
-        user_client="client-secret";
-
-      KAFKA_OPTS: "-Djava.security.auth.login.config=/tmp/kafka_server_jaas.conf"      
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-
-    command: |
-      bash -c "
-        echo 'KafkaServer {
-          org.apache.kafka.common.security.plain.PlainLoginModule required
-          username=\"admin\"
-          password=\"admin-secret\"
-          user_admin=\"admin-secret\"
-          user_client=\"client-secret\";
-        };' > /tmp/kafka_server_jaas.conf &&
-        /etc/confluent/docker/run
-      "
-
-  redis:
-    image: 'redis:alpine'
-    restart: always
-    command: redis-server
-    container_name: 'Redis'
-    volumes:
-      - redis:/data
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
     networks:
       - net
 
-  migrate:
-    build: .
-    command: poetry run python manage.py migrate
-    env_file:
-      - .env
-    depends_on:
-      - redis
-      - db
-    networks:
-      - net
-    
-  collectstatic:
-    build: .
-    command: poetry run python manage.py collectstatic --no-input
-    volumes:
-      - static:/app/static
-      - media:/app/media
-    networks:
-      - net
-    env_file:
-      - .env
+  # kafka:
+  #   image: confluentinc/cp-kafka:latest
+  #   ports:
+  #     - "9092:9092"
+  #   networks:
+  #     - net
+  #   environment:
+  #     # KRaft mode — NO ZOOKEEPER
+  #     CLUSTER_ID: "nlt5fjLLRLSaO1Hm7Gpc5A"
+  #     KAFKA_PROCESS_ROLES: "broker,controller"
+  #     KAFKA_NODE_ID: 1
+  #     KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:29093"
+  #     KAFKA_LISTENERS: "SASL_PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:29093"
+  #     KAFKA_ADVERTISED_LISTENERS: "SASL_PLAINTEXT://kafka:9092"
+  #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "SASL_PLAINTEXT:SASL_PLAINTEXT,CONTROLLER:PLAINTEXT"
+  #     KAFKA_INTER_BROKER_LISTENER_NAME: "SASL_PLAINTEXT"
+  #     KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+  #     KAFKA_SASL_ENABLED_MECHANISMS: "PLAIN"
+  #     KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: "PLAIN"
+  #     KAFKA_SASL_JAAS_CONFIG: |
+  #       org.apache.kafka.common.security.plain.PlainLoginModule required
+  #       username="admin"
+  #       password="admin-secret"
+  #       user_admin="admin-secret"
+  #       user_client="client-secret";
+  #
+  #     KAFKA_OPTS: "-Djava.security.auth.login.config=/tmp/kafka_server_jaas.conf"
+  #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+  #     KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+  #     KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+  #
+  #   command: |
+  #     bash -c "
+  #       echo 'KafkaServer {
+  #         org.apache.kafka.common.security.plain.PlainLoginModule required
+  #         username=\"admin\"
+  #         password=\"admin-secret\"
+  #         user_admin=\"admin-secret\"
+  #         user_client=\"client-secret\";
+  #       };' > /tmp/kafka_server_jaas.conf &&
+  #       /etc/confluent/docker/run
+  #     "
 
-  app:
-    build: .
-    restart: always
-    command: poetry run uvicorn config.asgi:application --host 0.0.0.0 --port 8000 --workers 4
-    volumes:
-      - ./app:/app
-      - static:/app/static
-      - media:/app/media
-    env_file:
-      - .env
-    depends_on:
-      - redis
-      - db
-    ports:
-      - 8000:8000
-    networks:
-      - net
+  # redis:
+  #   image: 'redis:alpine'
+  #   restart: always
+  #   command: redis-server
+  #   container_name: 'Redis'
+  #   volumes:
+  #     - redis:/data
+  #   networks:
+  #     - net
 
-  celery-worker:
-    build: .
-    command: >
-      sh -c "
-      sleep 10 &&
-      poetry run celery -A config worker -l WARNING
-      "
-    volumes:
-      - ./app:/app
-    depends_on:
-      - app
-      - redis
-      - db
-    environment:
-      - CELERY_BROKER_URL=redis://redis:6379/0
-    restart: on-failure
-    networks:
-      - net
-    env_file:
-      - .env
+  # migrate:
+  #   build: .
+  #   command: poetry run python manage.py migrate
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     - redis
+  #     - db
+  #   networks:
+  #     - net
 
-  celery-beat:
-    build: .
-    command: >
-      sh -c "
-      sleep 15 &&
-      poetry run celery -A config beat -l INFO
-      "
-    depends_on:
-      - app
-      - redis
-      - db
-    environment:
-      - CELERY_BROKER_URL=redis://redis:6379/0
-    restart: on-failure
-    volumes:
-      - ./app:/app
-    networks:
-      - net
-    env_file:
-      - .env
+  # collectstatic:
+  #   build: .
+  #   command: poetry run python manage.py collectstatic --no-input
+  #   volumes:
+  #     - static:/app/static
+  #     - media:/app/media
+  #   networks:
+  #     - net
+  #   env_file:
+  #     - .env
 
-  notify_service:
-    build: .
-    volumes: 
-      - ./notification_service:/app/notification_service
-    command: sh -c "python -m notification_service.notification"
-    env_file:
-      - .env
-    depends_on:
-      - kafka
-      - grafana
-    restart: on-failure
-    networks:
-      - net
+  # app:
+  #   build: .
+  #   restart: always
+  #   command: poetry run uvicorn config.asgi:application --host 0.0.0.0 --port 8000 --workers 4
+  #   volumes:
+  #     - ./app:/app
+  #     - static:/app/static
+  #     - media:/app/media
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     - redis
+  #     - db
+  #   ports:
+  #     - 8000:8000
+  #   networks:
+  #     - net
+
+  # celery-worker:
+  #   build: .
+  #   command: >
+  #     sh -c "
+  #     sleep 10 &&
+  #     poetry run celery -A config worker -l WARNING
+  #     "
+  #   volumes:
+  #     - ./app:/app
+  #   depends_on:
+  #     - app
+  #     - redis
+  #     - db
+  #   environment:
+  #     - CELERY_BROKER_URL=redis://redis:6379/0
+  #   restart: on-failure
+  #   networks:
+  #     - net
+  #   env_file:
+  #     - .env
+
+  # celery-beat:
+  #   build: .
+  #   command: >
+  #     sh -c "
+  #     sleep 15 &&
+  #     poetry run celery -A config beat -l INFO
+  #     "
+  #   depends_on:
+  #     - app
+  #     - redis
+  #     - db
+  #   environment:
+  #     - CELERY_BROKKER_URL=redis://redis:6379/0
+  #   restart: on-failure
+  #   volumes:
+  #     - ./app:/app
+  #   networks:
+  #     - net
+  #   env_file:
+  #     - .env
+
+  # notify_service:
+  #   build: .
+  #   volumes:
+  #     - ./notification_service:/app/notification_service
+  #   command: sh -c "python -m notification_service.notification"
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     - kafka
+  #     - grafana
+  #   restart: on-failure
+  #   networks:
+  #     - net
 
   alertmanager:
     image: prom/alertmanager:latest
@@ -199,18 +210,18 @@ services:
     networks:
       - net
 
-  loki: 
-    image: grafana/loki:2.8.4  
+  loki:
+    image: grafana/loki:2.8.4
     ports:
       - "3100:3100"
     restart: unless-stopped
     volumes:
       - ./conf/loki/loki-config.yaml:/etc/loki/local-config.yaml
-      - loki-data:/loki  
+      - loki-data:/loki
     command: -config.file=/etc/loki/local-config.yaml
     networks:
       - net
-      
+
   promtail:
     image: grafana/promtail:2.8.4
     container_name: promtail
@@ -235,17 +246,16 @@ services:
     networks:
       - net
 
-
-  nginx:
-    image: nginx:latest
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - static:/app/static
-      - media:/app/media
-      - ./conf/nginx/develop.conf:/etc/nginx/conf.d/default.conf
-    depends_on:
-      - app
-    networks:
-      - net
+  # nginx:
+  #   image: nginx:latest
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - static:/app/static
+  #     - media:/app/media
+  #     - ./conf/nginx/develop.conf:/etc/nginx/conf.d/default.conf
+  #   depends_on:
+  #     - app
+  #   networks:
+  #     - net
