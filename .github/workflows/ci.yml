@@ -1,4 +1,4 @@
-name: "CI for all branches"
+name: "CI for all branches "
 
 on: 
   pull_request:
@@ -37,13 +37,20 @@ jobs:
         run: black --check .
 
       - name: Mypy type check
-        run: mypy app/
-        
+        run: mypy ./
+
   tests:
     name: Unit Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Build and start services
+        run: docker compose up -d --build --wait --wait-timeout 180
+
+      - name: Show running containers
+        run: docker compose ps
+
 
       - name: Run testing
         run: |
@@ -51,7 +58,7 @@ jobs:
       
       - name: Upload test reason 
         if: always()
-        uses: actions/upload-artifact
+        uses: actions/upload-artifact@v4
         with:
           name: test-reason
           path: test-reason.txt
