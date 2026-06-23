@@ -1,4 +1,4 @@
-name: "CI for all branches"
+name: "CI for all branches "
 
 on: 
   pull_request:
@@ -38,7 +38,7 @@ jobs:
 
       - name: Mypy type check
         run: mypy app/
-        
+
   tests:
     name: Unit Tests
     runs-on: ubuntu-latest
